@@ -68,98 +68,6 @@ namespace CodeBank
             base.Dispose(disposing);
         }
 
-        private System.Windows.Forms.Label CreateLabel(string text, int x, int y)
-        {
-            return new System.Windows.Forms.Label
-            {
-                AutoSize = true,
-                Text = text,
-                Location = new System.Drawing.Point(x, y),
-                Margin = new System.Windows.Forms.Padding(2)
-            };
-        }
-
-        private void SetupCategoryTab(
-            System.Windows.Forms.TabPage tab,
-            System.Windows.Forms.ListBox list,
-            System.Windows.Forms.TextBox title,
-            System.Windows.Forms.TextBox description,
-            System.Windows.Forms.RichTextBox code,
-            System.Windows.Forms.TextBox language,
-            System.Windows.Forms.TextBox tag,
-            System.Windows.Forms.CheckBox isPublic,
-            System.Windows.Forms.Button edit,
-            System.Windows.Forms.Button delete)
-        {
-            tab.Padding = new System.Windows.Forms.Padding(8);
-            list.Location = new System.Drawing.Point(8, 8);
-            list.Size = new System.Drawing.Size(250, 600);
-            list.Anchor = System.Windows.Forms.AnchorStyles.Top |
-                          System.Windows.Forms.AnchorStyles.Bottom |
-                          System.Windows.Forms.AnchorStyles.Left;
-            list.SelectedIndexChanged += new System.EventHandler(this.CategoryList_SelectedIndexChanged);
-
-            var titleLabel = CreateLabel("عنوان", 275, 15);
-            title.Location = new System.Drawing.Point(275, 35);
-            title.Size = new System.Drawing.Size(300, 25);
-
-            var languageLabel = CreateLabel("زبان", 590, 15);
-            language.Location = new System.Drawing.Point(590, 35);
-            language.Size = new System.Drawing.Size(180, 25);
-
-            var descriptionLabel = CreateLabel("توضیحات", 275, 75);
-            description.Location = new System.Drawing.Point(275, 95);
-            description.Size = new System.Drawing.Size(495, 70);
-            description.Multiline = true;
-
-            var codeLabel = CreateLabel("کد", 275, 180);
-            code.Location = new System.Drawing.Point(275, 200);
-            code.Size = new System.Drawing.Size(495, 240);
-            code.Anchor = System.Windows.Forms.AnchorStyles.Top |
-                          System.Windows.Forms.AnchorStyles.Bottom |
-                          System.Windows.Forms.AnchorStyles.Left |
-                          System.Windows.Forms.AnchorStyles.Right;
-
-            var tagLabel = CreateLabel("تگ", 275, 455);
-            tag.Location = new System.Drawing.Point(275, 475);
-            tag.Size = new System.Drawing.Size(200, 25);
-            tag.Anchor = System.Windows.Forms.AnchorStyles.Bottom |
-                         System.Windows.Forms.AnchorStyles.Left;
-
-            isPublic.Text = "عمومی";
-            isPublic.Location = new System.Drawing.Point(500, 478);
-            isPublic.AutoSize = true;
-            isPublic.Anchor = System.Windows.Forms.AnchorStyles.Bottom |
-                              System.Windows.Forms.AnchorStyles.Left;
-
-            edit.Text = "ویرایش";
-            edit.Location = new System.Drawing.Point(590, 470);
-            edit.Size = new System.Drawing.Size(85, 35);
-            edit.Anchor = System.Windows.Forms.AnchorStyles.Bottom |
-                          System.Windows.Forms.AnchorStyles.Right;
-
-            delete.Text = "حذف";
-            delete.Location = new System.Drawing.Point(685, 470);
-            delete.Size = new System.Drawing.Size(85, 35);
-            delete.Anchor = System.Windows.Forms.AnchorStyles.Bottom |
-                            System.Windows.Forms.AnchorStyles.Right;
-
-            tab.Controls.Add(list);
-            tab.Controls.Add(titleLabel);
-            tab.Controls.Add(title);
-            tab.Controls.Add(languageLabel);
-            tab.Controls.Add(language);
-            tab.Controls.Add(descriptionLabel);
-            tab.Controls.Add(description);
-            tab.Controls.Add(codeLabel);
-            tab.Controls.Add(code);
-            tab.Controls.Add(tagLabel);
-            tab.Controls.Add(tag);
-            tab.Controls.Add(isPublic);
-            tab.Controls.Add(edit);
-            tab.Controls.Add(delete);
-        }
-
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
@@ -277,22 +185,22 @@ namespace CodeBank
             btnsave.Text = "ذخیره رکورد جدید";
             btnsave.Location = new System.Drawing.Point(125, 468);
             btnsave.Size = new System.Drawing.Size(140, 35);
-            btnsave.Click += new System.EventHandler(this.btnsave_Click);
+            btnsave.Click += new System.EventHandler(this.BtnSave_Click);
 
             btnUpdate.Text = "بروزرسانی";
             btnUpdate.Location = new System.Drawing.Point(275, 468);
             btnUpdate.Size = new System.Drawing.Size(110, 35);
-            btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
+            btnUpdate.Click += new System.EventHandler(this.BtnUpdate_Click);
 
             btnDelete.Text = "حذف";
             btnDelete.Location = new System.Drawing.Point(395, 468);
             btnDelete.Size = new System.Drawing.Size(90, 35);
-            btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
+            btnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
 
             btnClear.Text = "پاک کردن";
             btnClear.Location = new System.Drawing.Point(495, 468);
             btnClear.Size = new System.Drawing.Size(100, 35);
-            btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            btnClear.Click += new System.EventHandler(this.BtnClear_Click);
 
             dataGridView1.Location = new System.Drawing.Point(15, 520);
             dataGridView1.Size = new System.Drawing.Size(795, 190);
@@ -304,7 +212,7 @@ namespace CodeBank
             {
                 Id, Title, Language, Category, isPublic, CreateAt
             });
-            dataGridView1.SelectionChanged += new System.EventHandler(this.dataGridView1_SelectionChanged);
+            dataGridView1.SelectionChanged += new System.EventHandler(this.DataGridView1_SelectionChanged);
 
             Id.DataPropertyName = "Id";
             Id.HeaderText = "شناسه";
@@ -362,12 +270,12 @@ namespace CodeBank
                 txtTemplateCodeCode, txtTemplateCodeLang, txtTemplateCodeTag, chkTemplateCodePublic,
                 btnEditTemplate, btnDeleteTemplate);
 
-            btnEditError.Click += new System.EventHandler(this.btnEditError_Click);
-            btnDeleteError.Click += new System.EventHandler(this.btnDeleteError_Click);
-            btnEditTutorial.Click += new System.EventHandler(this.btnEditTutorial_Click);
-            btnDeleteTutorial.Click += new System.EventHandler(this.btnDeleteTutorial_Click);
-            btnEditTemplate.Click += new System.EventHandler(this.btnEditTemplate_Click);
-            btnDeleteTemplate.Click += new System.EventHandler(this.btnDeleteTemplate_Click);
+            btnEditError.Click += new System.EventHandler(this.BtnEditError_Click);
+            btnDeleteError.Click += new System.EventHandler(this.BtnDeleteError_Click);
+            btnEditTutorial.Click += new System.EventHandler(this.BtnEditTutorial_Click);
+            btnDeleteTutorial.Click += new System.EventHandler(this.BtnDeleteTutorial_Click);
+            btnEditTemplate.Click += new System.EventHandler(this.BtnEditTemplate_Click);
+            btnDeleteTemplate.Click += new System.EventHandler(this.BtnDeleteTemplate_Click);
 
             Name = "frmCodeBank";
             Text = "CodeBank - مدیریت کدها";
