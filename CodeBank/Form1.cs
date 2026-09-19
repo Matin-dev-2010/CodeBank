@@ -45,6 +45,89 @@ namespace CodeBank
             }
         }
 
+        private System.Windows.Forms.Label CreateLabel(string text, int x, int y)
+        {
+            return new System.Windows.Forms.Label
+            {
+                AutoSize = true,
+                Text = text,
+                Location = new System.Drawing.Point(x, y),
+                Margin = new System.Windows.Forms.Padding(2)
+            };
+        }
+
+        private void SetupCategoryTab(
+            System.Windows.Forms.TabPage tab,
+            System.Windows.Forms.ListBox list,
+            System.Windows.Forms.TextBox title,
+            System.Windows.Forms.TextBox description,
+            System.Windows.Forms.RichTextBox code,
+            System.Windows.Forms.TextBox language,
+            System.Windows.Forms.TextBox tag,
+            System.Windows.Forms.CheckBox isPublic,
+            System.Windows.Forms.Button edit,
+            System.Windows.Forms.Button delete)
+        {
+            tab.Padding = new System.Windows.Forms.Padding(8);
+            list.Location = new System.Drawing.Point(8, 8);
+            list.Size = new System.Drawing.Size(250, 600);
+            list.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            list.SelectedIndexChanged += new System.EventHandler(this.CategoryList_SelectedIndexChanged);
+
+            var titleLabel = CreateLabel("عنوان", 275, 15);
+            title.Location = new System.Drawing.Point(275, 35);
+            title.Size = new System.Drawing.Size(300, 25);
+
+            var languageLabel = CreateLabel("زبان", 590, 15);
+            language.Location = new System.Drawing.Point(590, 35);
+            language.Size = new System.Drawing.Size(180, 25);
+
+            var descriptionLabel = CreateLabel("توضیحات", 275, 75);
+            description.Location = new System.Drawing.Point(275, 95);
+            description.Size = new System.Drawing.Size(495, 70);
+            description.Multiline = true;
+
+            var codeLabel = CreateLabel("کد", 275, 180);
+            code.Location = new System.Drawing.Point(275, 200);
+            code.Size = new System.Drawing.Size(495, 240);
+            code.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+
+            var tagLabel = CreateLabel("تگ", 275, 455);
+            tag.Location = new System.Drawing.Point(275, 475);
+            tag.Size = new System.Drawing.Size(200, 25);
+            tag.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+
+            isPublic.Text = "عمومی";
+            isPublic.Location = new System.Drawing.Point(500, 478);
+            isPublic.AutoSize = true;
+            isPublic.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+
+            edit.Text = "ویرایش";
+            edit.Location = new System.Drawing.Point(590, 470);
+            edit.Size = new System.Drawing.Size(85, 35);
+            edit.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+
+            delete.Text = "حذف";
+            delete.Location = new System.Drawing.Point(685, 470);
+            delete.Size = new System.Drawing.Size(85, 35);
+            delete.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+
+            tab.Controls.Add(list);
+            tab.Controls.Add(titleLabel);
+            tab.Controls.Add(title);
+            tab.Controls.Add(languageLabel);
+            tab.Controls.Add(language);
+            tab.Controls.Add(descriptionLabel);
+            tab.Controls.Add(description);
+            tab.Controls.Add(codeLabel);
+            tab.Controls.Add(code);
+            tab.Controls.Add(tagLabel);
+            tab.Controls.Add(tag);
+            tab.Controls.Add(isPublic);
+            tab.Controls.Add(edit);
+            tab.Controls.Add(delete);
+        }
+
         private void ConfigureUi()
         {
             dataGridView1.AutoGenerateColumns = false;
