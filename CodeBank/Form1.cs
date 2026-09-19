@@ -145,26 +145,26 @@ namespace CodeBank
         {
             var list = sender as ListBox;
             if (list == listErrors)
-                listErrors_SelectedIndexChanged(sender, e);
+                ListErrors_SelectedIndexChanged(sender, e);
             else if (list == listTutorials)
-                listTutorials_SelectedIndexChanged(sender, e);
+                ListTutorials_SelectedIndexChanged(sender, e);
             else if (list == listBoxTemplateCode)
-                listBoxTemplateCode_SelectedIndexChanged(sender, e);
+                ListBoxTemplateCode_SelectedIndexChanged(sender, e);
         }
 
-        private void listErrors_SelectedIndexChanged(object sender, EventArgs e)
+        private void ListErrors_SelectedIndexChanged(object sender, EventArgs e)
         {
             ShowCategoryItem(GetSelectedCategoryItem(listErrors),
                 txtErrorTitle, txtErrorDesc, txtErrorCode, txtErrorLang, txtErrorTag, chkErrorPublic);
         }
 
-        private void listTutorials_SelectedIndexChanged(object sender, EventArgs e)
+        private void ListTutorials_SelectedIndexChanged(object sender, EventArgs e)
         {
             ShowCategoryItem(GetSelectedCategoryItem(listTutorials),
                 txtTutorialTitle, txtTutorialDesc, txtTutorialCode, txtTutorialLang, txtTutorialTag, chkTutorialPublic);
         }
 
-        private void listBoxTemplateCode_SelectedIndexChanged(object sender, EventArgs e)
+        private void ListBoxTemplateCode_SelectedIndexChanged(object sender, EventArgs e)
         {
             ShowCategoryItem(GetSelectedCategoryItem(listBoxTemplateCode),
                 txtTemplateCodeTitle, txtTemplateCodeDesc, txtTemplateCodeCode, txtTemplateCodeLang, txtTemplateCodeTag, chkTemplateCodePublic);
@@ -198,7 +198,7 @@ namespace CodeBank
             isPublic.Checked = item.IsPublic;
         }
 
-        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        private void DataGridView1_SelectionChanged(object sender, EventArgs e)
         {
             if (_isLoading || dataGridView1.CurrentRow == null)
                 return;
@@ -213,12 +213,12 @@ namespace CodeBank
             LoadItemIntoEditor(item);
         }
 
-        private void btnsave_Click(object sender, EventArgs e)
+        private void BtnSave_Click(object sender, EventArgs e)
         {
             SaveNewItem();
         }
 
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private void BtnUpdate_Click(object sender, EventArgs e)
         {
             if (!_editingId.HasValue)
             {
@@ -246,7 +246,7 @@ namespace CodeBank
             }
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private void BtnDelete_Click(object sender, EventArgs e)
         {
             if (!_editingId.HasValue)
             {
@@ -274,37 +274,37 @@ namespace CodeBank
             }
         }
 
-        private void btnClear_Click(object sender, EventArgs e)
+        private void BtnClear_Click(object sender, EventArgs e)
         {
             ClearEditor(true);
         }
 
-        private void btnEditError_Click(object sender, EventArgs e)
+        private void BtnEditError_Click(object sender, EventArgs e)
         {
             EditCategoryItem(listErrors);
         }
 
-        private void btnDeleteError_Click(object sender, EventArgs e)
+        private void BtnDeleteError_Click(object sender, EventArgs e)
         {
             DeleteCategoryItem(listErrors);
         }
 
-        private void btnEditTutorial_Click(object sender, EventArgs e)
+        private void BtnEditTutorial_Click(object sender, EventArgs e)
         {
             EditCategoryItem(listTutorials);
         }
 
-        private void btnDeleteTutorial_Click(object sender, EventArgs e)
+        private void BtnDeleteTutorial_Click(object sender, EventArgs e)
         {
             DeleteCategoryItem(listTutorials);
         }
 
-        private void btnEditTemplate_Click(object sender, EventArgs e)
+        private void BtnEditTemplate_Click(object sender, EventArgs e)
         {
             EditCategoryItem(listBoxTemplateCode);
         }
 
-        private void btnDeleteTemplate_Click(object sender, EventArgs e)
+        private void BtnDeleteTemplate_Click(object sender, EventArgs e)
         {
             DeleteCategoryItem(listBoxTemplateCode);
         }
