@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SQLite;
 
+// این پروژه از لحاظ ساختار افتضاح است اما بعد از تماشدن کار توسط یک ایجنت هوش مصنوعی ساختار بندی میشود
 namespace CodeBank
 {
     public partial class frmCodeBank : Form
