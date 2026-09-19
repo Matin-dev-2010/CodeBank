@@ -226,7 +226,9 @@ namespace CodeBank
 
         private void CategoryList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var list = sender as ListBox;
+            if (!(sender is ListBox list))
+                return;
+
             if (list == listErrors)
                 ListErrors_SelectedIndexChanged(sender, e);
             else if (list == listTutorials)
@@ -286,8 +288,7 @@ namespace CodeBank
             if (_isLoading || dataGridView1.CurrentRow == null)
                 return;
 
-            var item = dataGridView1.CurrentRow.DataBoundItem as CodeItem;
-            if (item == null)
+            if (!(dataGridView1.CurrentRow.DataBoundItem is CodeItem item))
                 return;
 
             if (!PrepareForNavigation())
