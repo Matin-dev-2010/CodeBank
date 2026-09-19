@@ -236,6 +236,7 @@ namespace CodeBank
                 MessageBox.Show("رکورد با موفقیت بروزرسانی شد.", "موفق",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                _isDirty = false;
                 RefreshAllData();
                 ClearEditor(false);
             }
@@ -260,6 +261,7 @@ namespace CodeBank
             try
             {
                 _service.Delete(_editingId.Value);
+                _isDirty = false;
                 RefreshAllData();
                 ClearEditor(false);
 
@@ -341,6 +343,7 @@ namespace CodeBank
             try
             {
                 _service.Delete(item.Id);
+                _isDirty = false;
                 RefreshAllData();
                 ClearEditor(false);
 
@@ -363,6 +366,7 @@ namespace CodeBank
                 MessageBox.Show("رکورد با موفقیت ذخیره شد.", "موفق",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                _isDirty = false;
                 RefreshAllData();
                 ClearEditor(false);
             }
@@ -464,6 +468,7 @@ namespace CodeBank
                     _service.Create(ReadEditor());
                 }
 
+                _isDirty = false;
                 RefreshAllData();
                 return true;
             }
