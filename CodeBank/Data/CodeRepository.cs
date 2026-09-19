@@ -151,7 +151,7 @@ WHERE Id = @Id;";
                 Language = Convert.ToString(reader["Language"]),
                 Category = Convert.ToString(reader["Category"]),
                 Tag = reader["Tag"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Tag"]),
-                IsPublic = Convert.ToInt32(reader["isPublic"]) == 1,
+                IsPublic = reader["isPublic"] == DBNull.Value || Convert.ToInt32(reader["isPublic"]) == 1,
                 CreateAt = reader["CreateAt"] == DBNull.Value ? System.DateTime.MinValue : Convert.ToDateTime(reader["CreateAt"])
             };
         }
