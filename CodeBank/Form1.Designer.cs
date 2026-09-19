@@ -97,10 +97,7 @@ namespace CodeBank
             list.Anchor = System.Windows.Forms.AnchorStyles.Top |
                           System.Windows.Forms.AnchorStyles.Bottom |
                           System.Windows.Forms.AnchorStyles.Left;
-            list.SelectedIndexChanged += new System.EventHandler(
-                tab == txttabpageErrors ? this.listErrors_SelectedIndexChanged :
-                tab == tabpageTutorials ? this.listTutorials_SelectedIndexChanged :
-                this.listBoxTemplateCode_SelectedIndexChanged);
+            list.SelectedIndexChanged += new System.EventHandler(this.CategoryList_SelectedIndexChanged);
 
             var titleLabel = CreateLabel("عنوان", 275, 15);
             title.Location = new System.Drawing.Point(275, 35);
