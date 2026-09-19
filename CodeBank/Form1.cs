@@ -141,6 +141,17 @@ namespace CodeBank
             return list.SelectedItem as CodeItem;
         }
 
+        private void CategoryList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var list = sender as ListBox;
+            if (list == listErrors)
+                listErrors_SelectedIndexChanged(sender, e);
+            else if (list == listTutorials)
+                listTutorials_SelectedIndexChanged(sender, e);
+            else if (list == listBoxTemplateCode)
+                listBoxTemplateCode_SelectedIndexChanged(sender, e);
+        }
+
         private void listErrors_SelectedIndexChanged(object sender, EventArgs e)
         {
             ShowCategoryItem(GetSelectedCategoryItem(listErrors),
