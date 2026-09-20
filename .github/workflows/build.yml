@@ -28,8 +28,8 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          $referenceRoot = Join-Path $env:GITHUB_WORKSPACE "packages/Microsoft.NETFramework.ReferenceAssemblies.net461.1.0.3/build/.NETFramework"
-          if (-not (Test-Path (Join-Path $referenceRoot "v4.6.1"))) {
-            throw ".NET Framework 4.6.1 reference assemblies were not restored."
+          $frameworkPath = Join-Path $env:GITHUB_WORKSPACE "packages/Microsoft.NETFramework.ReferenceAssemblies.net461.1.0.3/build/.NETFramework/v4.6.1"
+          if (-not (Test-Path (Join-Path $frameworkPath "mscorlib.dll"))) {
+            throw ".NET Framework 4.6.1 reference assemblies were not restored correctly."
           }
-          msbuild CodeBank.sln /p:Configuration=Release /p:TargetFrameworkRootPath="$referenceRoot/" /m /v:minimal
+          msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="$frameworkPath" /m /v:minimal
