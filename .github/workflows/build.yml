@@ -2,7 +2,14 @@ name: Build CodeBank
 
 on:
   push:
+    branches:
+      - master
+      - "v*"
+      - "refactor/**"
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -12,8 +19,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
       - name: Restore NuGet packages
         run: nuget restore CodeBank.sln
 
       - name: Build
-        run: msbuild CodeBank.sln /p:Configuration=Release /m
+        run: msbuild CodeBank.sln /p:Configuration=Release /m /v:minimal
