@@ -24,7 +24,6 @@ namespace CodeBank.UI
             tabs.SizeMode = TabSizeMode.Fixed;
             tabs.ItemSize = new Size(126, 38);
             tabs.Padding = new Point(14, 5);
-            tabs.DrawItem -= (sender, e) => TabControl1_DrawItem(tabs, e);
             tabs.DrawItem += (sender, e) => TabControl1_DrawItem(tabs, e);
             ApplyVisualTheme(root);
             tabs.Invalidate();
@@ -50,7 +49,7 @@ namespace CodeBank.UI
 
                 if (control is TabPage)
                 {
-                    control.BackColor = UiBackground;
+                    control.BackColor = Background;
                     control.ForeColor = Ink;
                     control.Padding = new Padding(12);
                 }
