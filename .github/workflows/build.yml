@@ -52,7 +52,7 @@ jobs:
         run: dotnet test CodeBank.Tests/CodeBank.Tests.csproj --configuration Release --no-build --no-restore --logger "console;verbosity=normal" --logger "trx;LogFileName=CodeBank.Tests.trx" --results-directory TestResults
 
       - name: Upload application build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: CodeBank-build
           path: CodeBank/bin/Release/
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: CodeBank-test-results
           path: "TestResults/*.trx"
