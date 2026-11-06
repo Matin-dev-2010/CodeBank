@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("CodeBank")]
 [assembly: AssemblyDescription("A Windows Forms application for organizing reusable code snippets with SQLite.")]
@@ -12,6 +13,7 @@ using System.Runtime.InteropServices;
 
 [assembly: ComVisible(false)]
 [assembly: Guid("5afd869a-b694-4b38-a6d0-8b14b933e7a0")]
+[assembly: InternalsVisibleTo("CodeBank.Tests")]
 
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
