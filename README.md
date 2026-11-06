@@ -61,6 +61,9 @@ CodeBank/
 ├── CodeBank.Tests/
 │   ├── CodeBank.Tests.csproj
 │   └── CodeItemServiceTests.cs
+├── CodeBank.Tests/
+│   ├── CodeBank.Tests.csproj
+│   └── CodeItemServiceTests.cs
 ├── CodeBank/
 │   ├── Data/
 │   │   ├── Database.cs
@@ -81,6 +84,11 @@ CodeBank/
 │   └── packages.config
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
+├── docs/
+│   ├── DEVELOPMENT.md
+│   └── RELEASE.md
+├── installer/
+│   └── CodeBank.iss
 ├── LICENSE
 ├── README.md
 └── SECURITY.md
