@@ -1,0 +1,66 @@
+name: Release CodeBank
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: codebank-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, test, and package
+    runs-on: windows-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore CodeBank.sln
+
+      - name: Verify .NET Framework 4.6.1 reference assemblies
+        shell: pwsh
+        run: |
+          $frameworkPath = Join-Path $env:GITHUB_WORKSPACE "packages/Microsoft.NETFramework.ReferenceAssemblies.net461.1.0.3/build/.NETFramework/v4.6.1"
+          if (-not (Test-Path (Join-Path $frameworkPath "mscorlib.dll"))) {
+            Write-Error "The .NET Framework 4.6.1 reference assemblies were not restored."
+            exit 1
+          }
+          "FRAMEWORK_REFERENCE_PATH=$frameworkPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build solution
+        run: msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="${{ env.FRAMEWORK_REFERENCE_PATH }}" /m /v:minimal
+
+      - name: Run unit tests
+        run: dotnet test CodeBank.Tests/CodeBank.Tests.csproj --configuration Release --no-restore --logger "console;verbosity=normal"
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $compiler = Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6/ISCC.exe"
+          if (-not (Test-Path $compiler)) {
+            Write-Error "Inno Setup compiler was not found."
+            exit 1
+          }
+          & $compiler "/DAppVersion=$version" "installer/CodeBank.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/installer/CodeBank-Setup-*.exe
