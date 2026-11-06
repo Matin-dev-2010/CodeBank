@@ -32,6 +32,7 @@ namespace CodeBank
             InitializeSearchUi();
             ConfigureCopyButtons();
             WireEditorDirtyTracking();
+            CodeBankTheme.Apply(this);
         }
 
         private void Form1_Load(object sender, EventArgs e)
