@@ -61,9 +61,6 @@ CodeBank/
 ├── CodeBank.Tests/
 │   ├── CodeBank.Tests.csproj
 │   └── CodeItemServiceTests.cs
-├── CodeBank.Tests/
-│   ├── CodeBank.Tests.csproj
-│   └── CodeItemServiceTests.cs
 ├── CodeBank/
 │   ├── Data/
 │   │   ├── Database.cs
