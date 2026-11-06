@@ -1,89 +1,152 @@
 # CodeBank
 
-CodeBank is a C# Windows Forms desktop application for storing, organizing, editing, and deleting reusable code snippets in a local SQLite database.
+[![Build](https://github.com/Matin-dev-2010/CodeBank/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/Matin-dev-2010/CodeBank/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.6.1-512BD4)](https://dotnet.microsoft.com/)
 
-## Tech Stack
+**CodeBank** is a Windows desktop application for saving, organizing, searching, and managing reusable code snippets in a local SQLite database.
 
-- C#
-- Windows Forms
-- .NET Framework 4.6.1
-- SQLite
-- System.Data.SQLite 1.0.119
+> The repository contains the application source code. A downloadable installer or signed release package is not currently provided.
 
-Entity Framework is not used by the application and has been removed from the project dependencies.
+## Contents
 
-## Architecture
-
-```text
-CodeBank/
-├── CodeBank.sln
-└── CodeBank/
-    ├── Data/
-    │   ├── Database.cs
-    │   ├── DatabaseInitializer.cs
-    │   └── CodeRepository.cs
-    ├── Models/
-    │   └── CodeItem.cs
-    ├── Services/
-    │   ├── CodeItemService.cs
-    │   └── FormStateService.cs
-    ├── Form1.cs
-    ├── Form1.Designer.cs
-    ├── Form1.resx
-    ├── Program.cs
-    ├── App.config
-    └── packages.config
-```
-
-### Responsibilities
-
-- **Models** — application data models.
-- **Data** — SQLite connection, database initialization, and CRUD persistence.
-- **Services** — validation and form-state behavior.
-- **Form1.cs** — UI orchestration only; it does not contain SQL.
-- **Form1.Designer.cs** — complete Windows Forms UI definition.
+- [Features](#features)
+- [Technology](#technology)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Build and run](#build-and-run)
+- [Data storage](#data-storage)
+- [CI build](#ci-build)
+- [Known limitations](#known-limitations)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- Create code records.
-- Read and browse all records.
-- Update existing records.
-- Delete records with confirmation.
-- Browse records by category.
-- Use database IDs for record selection instead of titles.
-- Parameterized SQLite queries.
-- Shared category-list behavior.
-- Unsaved-change protection before clearing, navigating, replacing, or closing.
-- Automatically generated Save, Update, Delete, and Clear controls in the WinForms designer code.
-- Existing SQLite databases are reused without deleting user data.
+- Create, view, update, and delete code snippets.
+- Organize snippets by category, programming language, and tag.
+- Store a title, description, source code, language, category, tag, and visibility flag.
+- Browse records in the main grid and category-specific lists.
+- Use parameterized SQLite commands for data operations.
+- Validate required fields in the service layer.
+- Warn before clearing, navigating away from, or closing the editor when unsaved changes exist.
+- Reuse an existing database instead of dropping user data during initialization.
 
-## CRUD Flow
+## Technology
 
-1. **New record:** fill the editor and select Save New Record.
-2. **Edit:** select a row in the main grid or select a category item and press Edit.
-3. **Update:** change the fields and press Update.
-4. **Delete:** select a record and press Delete, then confirm.
-5. **Clear:** press Clear. If there are unsaved changes, the application asks whether they should be saved first.
+| Component | Technology |
+|---|---|
+| Language | C# |
+| Desktop UI | Windows Forms |
+| Runtime target | .NET Framework 4.6.1 |
+| Database | SQLite |
+| Data provider | System.Data.SQLite 1.0.119 |
+| IDE | Visual Studio / MSBuild |
 
-## Database
+Entity Framework is not used by the current application.
 
-The database file is created as `database.db` beside the application executable. The application creates the required table and indexes automatically on startup.
+## Architecture
 
-The current database schema is compatible with the existing CodeFormFile table, so the application does not drop or recreate an existing database.
+The solution is intentionally small and separates UI orchestration, validation, and persistence.
+
+```text
+CodeBank/
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── workflows/
+│       └── build.yml
+├── CodeBank.sln
+├── CodeBank/
+│   ├── Data/
+│   │   ├── Database.cs
+│   │   ├── DatabaseInitializer.cs
+│   │   └── CodeRepository.cs
+│   ├── Models/
+│   │   └── CodeItem.cs
+│   ├── Services/
+│   │   ├── CodeItemService.cs
+│   │   └── FormStateService.cs
+│   ├── Properties/
+│   ├── Form1.cs
+│   ├── Form1.Designer.cs
+│   ├── Form1.resx
+│   ├── Program.cs
+│   ├── App.config
+│   └── packages.config
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
+└── SECURITY.md
+```
+
+| Layer | Responsibility |
+|---|---|
+| `Models` | Application data models. |
+| `Data` | SQLite connection management, schema initialization, and CRUD queries. |
+| `Services` | Input validation and editor-state confirmation. |
+| `Form1.cs` | Windows Forms event handling and UI orchestration. |
+| `Form1.Designer.cs` | Generated Windows Forms control layout. |
 
 ## Requirements
 
-- Visual Studio with .NET Framework 4.6.1 development support.
+- Windows.
+- Visual Studio with .NET Framework 4.6.1 targeting support, or compatible MSBuild tools.
 - NuGet package restore.
+- .NET Framework 4.6.1 or a compatible later .NET Framework runtime installed.
 
-## Getting Started
+## Build and run
 
-```bash
-git clone https://github.com/Matin-dev-2010/CodeBank.git
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/Matin-dev-2010/CodeBank.git
+   cd CodeBank
+   ```
+
+2. Open `CodeBank.sln` in Visual Studio.
+3. Restore NuGet packages.
+4. Select the `Release` configuration.
+5. Build the solution and run the application.
+
+You can also build from a Visual Studio Developer Command Prompt:
+
+```powershell
+nuget restore CodeBank.sln
+msbuild CodeBank.sln /p:Configuration=Release
 ```
 
-Open CodeBank.sln, restore NuGet packages, build, and run.
+The GitHub Actions workflow uses the .NET Framework 4.6.1 reference-assemblies NuGet package so the project can be compiled on a hosted Windows runner.
 
-## Notes
+## Data storage
 
-The project intentionally uses a small number of layers rather than introducing unnecessary frameworks. The goal is clear separation of UI, business validation, and persistence while keeping the application easy to understand and maintain.
+The current application creates and uses a SQLite database named `database.db` in the application executable directory.
+
+The schema initializer creates the `CodeFormFile` table and indexes only when they do not already exist. It does not drop the existing table or migrate arbitrary future schema changes.
+
+**Back up `database.db` before replacing application files or experimenting with schema changes.** Do not commit personal databases or real user data to this repository.
+
+## CI build
+
+GitHub Actions restores NuGet dependencies and builds the solution in Release mode on Windows. Successful builds upload the compiled output as a workflow artifact.
+
+The workflow currently verifies compilation; it does not represent a complete automated test suite. There is no dedicated unit-test project yet.
+
+## Known limitations
+
+- The application currently uses a local SQLite database and has no synchronization or multi-user server.
+- Schema initialization is not a versioned migration system.
+- Automated unit and integration tests have not yet been added.
+- Database placement beside the executable may require write permissions in the installation directory. A per-user application-data location should be introduced with a safe migration path before a packaged installer is distributed.
+- No signed installer or production release binary is currently published.
+
+These are documented follow-up areas, not features that should be assumed to exist.
+
+## Contributing
+
+Bug reports, feature suggestions, and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes and use the provided issue templates.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
