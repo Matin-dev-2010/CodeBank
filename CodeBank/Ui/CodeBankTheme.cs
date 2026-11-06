@@ -77,6 +77,7 @@ namespace CodeBank.UI
                     editor.RightToLeft = RightToLeft.No;
                     editor.DetectUrls = false;
                     editor.WordWrap = false;
+                    editor.ScrollBars = RichTextBoxScrollBars.Both;
                 }
                 else if (control is ComboBox)
                 {
