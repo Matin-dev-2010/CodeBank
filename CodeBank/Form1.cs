@@ -313,8 +313,16 @@ namespace CodeBank
                 return;
             }
 
-            _selectedGridItemId = item.Id;
-            LoadItemIntoEditor(item);
+            var refreshedItem = _service.GetById(item.Id);
+            if (refreshedItem == null)
+            {
+                RestoreGridSelection(_selectedGridItemId);
+                return;
+            }
+
+            _selectedGridItemId = refreshedItem.Id;
+            RestoreGridSelection(refreshedItem.Id);
+            LoadItemIntoEditor(refreshedItem);
         }
 
         private void RestoreGridSelection(long? itemId)
