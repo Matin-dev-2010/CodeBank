@@ -30,6 +30,14 @@ namespace CodeBank.Services
             return _repository.GetByCategory(category);
         }
 
+        public List<CodeItem> Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<CodeItem>();
+
+            return _repository.Search(query.Trim());
+        }
+
         public CodeItem GetById(long id)
         {
             if (id <= 0)
