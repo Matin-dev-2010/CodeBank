@@ -381,7 +381,9 @@ namespace CodeBank
                 Text = "کپی",
                 Size = new System.Drawing.Size(36, Math.Max(22, target.Height)),
                 Location = new System.Drawing.Point(originalRight - 38, target.Top),
-                Anchor = target.Anchor,
+                Anchor = (target.Anchor & AnchorStyles.Right) != 0
+                    ? AnchorStyles.Top | AnchorStyles.Right
+                    : AnchorStyles.Top | AnchorStyles.Left,
                 TabStop = false,
                 Font = new System.Drawing.Font("Tahoma", 7F),
                 UseVisualStyleBackColor = true
