@@ -120,6 +120,36 @@ namespace CodeBank.Tests
             Assert.Throws<ArgumentException>(() => _service.GetByCategory(" "));
         }
 
+        [Test]
+        public void Search_MatchesTitleCodeAndTag()
+        {
+            var titleId = _service.Create(new CodeItem
+            {
+                Title = "Async Examples", Code = "await Task.Delay(1);",
+                Language = "C#", Category = "Tutorial", Tag = "async"
+            });
+            var codeId = _service.Create(new CodeItem
+            {
+                Title = "Console Sample", Code = "Console.WriteLine(\"hello\");",
+                Language = "C#", Category = "Tutorial", Tag = "console"
+            });
+            var tagId = _service.Create(new CodeItem
+            {
+                Title = "Array Helpers", Code = "var values = new int[3];",
+                Language = "C#", Category = "Snippet", Tag = "collections"
+            });
+
+            Assert.That(_service.Search("async").Exists(x => x.Id == titleId), Is.True);
+            Assert.That(_service.Search("WRITELINE").Exists(x => x.Id == codeId), Is.True);
+            Assert.That(_service.Search("COLLECTIONS").Exists(x => x.Id == tagId), Is.True);
+        }
+
+        [Test]
+        public void Search_Whitespace_ReturnsEmptyList()
+        {
+            Assert.That(_service.Search("   "), Is.Empty);
+        }
+
         private static CodeItem ValidItem()
         {
             return new CodeItem
@@ -150,6 +180,18 @@ namespace CodeBank.Tests
             public List<CodeItem> GetByCategory(string category)
             {
                 return _items.Where(x => x.Category == category).ToList();
+            }
+
+            public List<CodeItem> Search(string query)
+            {
+                return _items.Where(x =>
+                    (x.Title ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    (x.Description ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    (x.Code ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    (x.Language ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    (x.Category ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    (x.Tag ?? string.Empty).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .ToList();
             }
 
             public CodeItem GetById(long id)
