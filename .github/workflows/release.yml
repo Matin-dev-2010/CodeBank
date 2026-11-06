@@ -57,7 +57,7 @@ jobs:
         run: msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="${{ env.FRAMEWORK_REFERENCE_PATH }}" /m /v:minimal
 
       - name: Run unit tests
-        run: dotnet test CodeBank.Tests/CodeBank.Tests.csproj --configuration Release --no-restore --logger "console;verbosity=normal"
+        run: dotnet test CodeBank.Tests/CodeBank.Tests.csproj --configuration Release --no-restore -p:FrameworkPathOverride="${{ env.FRAMEWORK_REFERENCE_PATH }}" --logger "console;verbosity=normal"
 
       - name: Install Inno Setup
         run: choco install innosetup --yes --no-progress
