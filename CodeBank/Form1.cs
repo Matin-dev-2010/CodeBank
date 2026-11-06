@@ -231,9 +231,17 @@ namespace CodeBank
                 return;
 
             _searchPanel.Left = tabpageInsert.ClientSize.Width - _searchPanel.Width - 12;
-            var editorWidth = Math.Max(260, _searchPanel.Left - txtdesc.Left - 24);
-            txtdesc.Width = editorWidth;
-            txtcode.Width = editorWidth;
+            var editorWidth = Math.Max(300, _searchPanel.Left - txtdesc.Left - 24);
+            txtdesc.Width = editorWidth - 40;
+            txtcode.Width = editorWidth - 40;
+
+            foreach (Control control in tabpageInsert.Controls)
+            {
+                var copyButton = control as Button;
+                var target = copyButton == null ? null : copyButton.Tag as Control;
+                if (target == txtdesc || target == txtcode)
+                    copyButton.Left = target.Right + 2;
+            }
         }
 
         private void SearchResults_Format(object sender, ListControlConvertEventArgs e)
@@ -414,7 +422,9 @@ namespace CodeBank
             var originalRight = target.Right;
             var button = new Button
             {
+                Name = "btnCopy_" + target.Name,
                 Text = "کپی",
+                Tag = target,
                 Size = new System.Drawing.Size(36, 24),
                 Location = new System.Drawing.Point(originalRight - 38, target.Top),
                 Anchor = (target.Anchor & AnchorStyles.Right) != 0
