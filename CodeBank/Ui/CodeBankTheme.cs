@@ -33,8 +33,6 @@ namespace CodeBank
                 form.AutoScaleMode = AutoScaleMode.Font;
 
                 ApplyToControls(form);
-                foreach (Control control in form.Controls)
-                    ApplyControl(control);
 
                 var tabs = FindTabControl(form);
                 if (tabs != null)
@@ -208,13 +206,16 @@ namespace CodeBank
                     e.Graphics.FillRectangle(brush, new Rectangle(bounds.X + 8, bounds.Bottom - 3, bounds.Width - 16, 3));
             }
 
-            TextRenderer.DrawText(
-                e.Graphics,
-                tabs.TabPages[e.Index].Text,
-                new Font("Tahoma", 9F, selected ? FontStyle.Bold : FontStyle.Regular),
-                bounds,
-                selected ? Primary : Muted,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            using (var tabFont = new Font("Tahoma", 9F, selected ? FontStyle.Bold : FontStyle.Regular))
+            {
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    tabs.TabPages[e.Index].Text,
+                    tabFont,
+                    bounds,
+                    selected ? Primary : Muted,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            }
         }
     }
 }
