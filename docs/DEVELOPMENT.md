@@ -12,7 +12,7 @@ The current data flow is:
 
 ## Database compatibility
 
-The database initializer uses `CREATE TABLE IF NOT EXISTS` and creates indexes. This protects an existing table from being dropped during startup, but it is not a migration framework.
+The database initializer tracks the schema version with SQLite `PRAGMA user_version` and applies the initial schema (version 1) transactionally. Existing version-0 databases are initialized without dropping the existing table. Upgrade migrations beyond version 1 must be added explicitly before changing the schema.
 
 Before changing the schema:
 
