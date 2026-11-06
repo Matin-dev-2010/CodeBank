@@ -132,9 +132,9 @@ namespace CodeBank
         private static void StyleButton(Button button)
         {
             string caption = (button.Text ?? string.Empty).Trim();
-            bool isDanger = caption.Contains("حذف");
+            bool isDanger = caption.Contains("حذف") || caption.Contains("پاک");
             bool isPrimary = caption.Contains("ذخیره") || caption.Contains("ثبت") ||
-                             caption.Contains("ویرایش") || caption.Contains("پاک");
+                             caption.Contains("بروزرسانی") || caption.Contains("ویرایش");
             Color normal = isDanger ? Danger : (isPrimary ? Primary : Color.FromArgb(226, 232, 240));
             Color hover = isDanger ? DangerHover : (isPrimary ? PrimaryHover : Color.FromArgb(203, 213, 225));
             Color foreground = (isDanger || isPrimary) ? Color.White : Text;
