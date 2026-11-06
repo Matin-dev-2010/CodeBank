@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using CodeBank.Data;
 using CodeBank.Models;
 using CodeBank.Services;
+using CodeBank.UI;
 
 namespace CodeBank
 {
@@ -447,33 +448,17 @@ namespace CodeBank
         }
 
 
-        private static readonly System.Drawing.Color UiBackground = System.Drawing.Color.FromArgb(241, 245, 249);
-        private static readonly System.Drawing.Color UiSurface = System.Drawing.Color.White;
-        private static readonly System.Drawing.Color UiInk = System.Drawing.Color.FromArgb(30, 41, 59);
-        private static readonly System.Drawing.Color UiMuted = System.Drawing.Color.FromArgb(100, 116, 139);
-        private static readonly System.Drawing.Color UiPrimary = System.Drawing.Color.FromArgb(37, 99, 235);
-        private static readonly System.Drawing.Color UiPrimaryHover = System.Drawing.Color.FromArgb(29, 78, 216);
-        private static readonly System.Drawing.Color UiDanger = System.Drawing.Color.FromArgb(220, 38, 38);
-        private static readonly System.Drawing.Color UiDangerHover = System.Drawing.Color.FromArgb(185, 28, 28);
-        private static readonly System.Drawing.Color UiCodeBackground = System.Drawing.Color.FromArgb(15, 23, 42);
-        private static readonly System.Drawing.Color UiCodeForeground = System.Drawing.Color.FromArgb(226, 232, 240);
-
         private void InitializeModernShell()
         {
             Text = "CodeBank | مدیریت هوشمند کدها";
             StartPosition = FormStartPosition.CenterScreen;
             Size = new System.Drawing.Size(1280, 860);
             MinimumSize = new System.Drawing.Size(1100, 760);
-            BackColor = UiBackground;
+            BackColor = CodeBankTheme.Background;
             ForeColor = UiInk;
             Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
 
             tabControl1.Dock = DockStyle.Fill;
-            tabControl1.DrawMode = TabDrawMode.OwnerDrawFixed;
-            tabControl1.SizeMode = TabSizeMode.Fixed;
-            tabControl1.ItemSize = new System.Drawing.Size(126, 38);
-            tabControl1.Padding = new System.Drawing.Point(14, 5);
-            tabControl1.DrawItem += TabControl1_DrawItem;
 
             var header = new System.Windows.Forms.Panel
             {
@@ -533,7 +518,7 @@ namespace CodeBank
                 Dock = DockStyle.Bottom,
                 SizingGrip = false,
                 BackColor = System.Drawing.Color.White,
-                ForeColor = UiMuted,
+                ForeColor = CodeBankTheme.Muted,
                 Padding = new Padding(12, 3, 12, 3)
             };
             status.Items.Add(new ToolStripStatusLabel("آماده به کار")
@@ -543,7 +528,7 @@ namespace CodeBank
             });
             status.Items.Add(new ToolStripStatusLabel("  •  اطلاعات به‌صورت محلی ذخیره می‌شوند")
             {
-                ForeColor = UiMuted,
+                ForeColor = CodeBankTheme.Muted,
                 Spring = true,
                 TextAlign = System.Drawing.ContentAlignment.MiddleRight
             });
@@ -558,31 +543,38 @@ namespace CodeBank
             Controls.SetChildIndex(status, 1);
             Controls.SetChildIndex(tabControl1, 2);
 
-            ApplyVisualTheme(this);
-            tabControl1.Invalidate();
+            CodeBankTheme.Apply(this, tabControl1);
+
+            brandTitle.ForeColor = System.Drawing.Color.White;
+            brandTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
+            brandSubtitle.ForeColor = System.Drawing.Color.FromArgb(148, 163, 184);
+            brandSubtitle.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+            headerMeta.ForeColor = System.Drawing.Color.FromArgb(147, 197, 253);
+            headerMeta.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
         }
 
-        private void ApplyVisualTheme(Control root)
+        private static void ApplyVisualTheme(Control root)
         {
             foreach (Control control in root.Controls)
             {
-                control.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+                bool insideHeader = IsInsideHeader(control);
 
                 if (control is TabPage)
                 {
-                    control.BackColor = UiBackground;
-                    control.ForeColor = UiInk;
+                    control.BackColor = CodeBankTheme.Background;
+                    control.ForeColor = Ink;
                     control.Padding = new Padding(12);
                 }
-                else if (control is Label)
+                else if (control is Label && !insideHeader)
                 {
-                    control.ForeColor = UiMuted;
+                    control.ForeColor = Muted;
+                    control.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
                 }
                 else if (control is TextBox)
                 {
                     var textBox = (TextBox)control;
-                    textBox.BackColor = UiSurface;
-                    textBox.ForeColor = UiInk;
+                    textBox.BackColor = Surface;
+                    textBox.ForeColor = Ink;
                     textBox.BorderStyle = BorderStyle.FixedSingle;
                     textBox.Font = new System.Drawing.Font("Tahoma", 9.5F);
                     textBox.TextAlign = HorizontalAlignment.Right;
@@ -590,8 +582,8 @@ namespace CodeBank
                 else if (control is RichTextBox)
                 {
                     var editor = (RichTextBox)control;
-                    editor.BackColor = UiCodeBackground;
-                    editor.ForeColor = UiCodeForeground;
+                    editor.BackColor = CodeBackground;
+                    editor.ForeColor = CodeForeground;
                     editor.BorderStyle = BorderStyle.None;
                     editor.Font = new System.Drawing.Font("Consolas", 10F);
                     editor.RightToLeft = RightToLeft.No;
@@ -601,16 +593,16 @@ namespace CodeBank
                 else if (control is ComboBox)
                 {
                     var combo = (ComboBox)control;
-                    combo.BackColor = UiSurface;
-                    combo.ForeColor = UiInk;
+                    combo.BackColor = Surface;
+                    combo.ForeColor = Ink;
                     combo.FlatStyle = FlatStyle.Flat;
                     combo.Font = new System.Drawing.Font("Tahoma", 9F);
                 }
                 else if (control is ListBox)
                 {
                     var list = (ListBox)control;
-                    list.BackColor = UiSurface;
-                    list.ForeColor = UiInk;
+                    list.BackColor = Surface;
+                    list.ForeColor = Ink;
                     list.BorderStyle = BorderStyle.None;
                     list.Font = new System.Drawing.Font("Tahoma", 9F);
                     list.DrawMode = DrawMode.OwnerDrawFixed;
@@ -629,13 +621,13 @@ namespace CodeBank
                 else if (control is CheckBox)
                 {
                     var check = (CheckBox)control;
-                    check.ForeColor = UiInk;
+                    check.ForeColor = Ink;
                     check.Font = new System.Drawing.Font("Tahoma", 9F);
                     check.Cursor = Cursors.Hand;
                 }
-                else if (control is Panel)
+                else if (control is Panel && control.Name == "pnlSearch")
                 {
-                    control.BackColor = UiSurface;
+                    control.BackColor = Surface;
                 }
 
                 if (control.HasChildren)
@@ -643,7 +635,7 @@ namespace CodeBank
             }
         }
 
-        private void StyleButton(Button button)
+        private static void StyleButton(Button button)
         {
             bool isDanger = button.Name.IndexOf("delete", StringComparison.OrdinalIgnoreCase) >= 0 ||
                 button.Text.IndexOf("حذف", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -665,9 +657,9 @@ namespace CodeBank
 
             if (isDanger)
             {
-                button.BackColor = UiDanger;
+                button.BackColor = Danger;
                 button.ForeColor = System.Drawing.Color.White;
-                button.FlatAppearance.MouseOverBackColor = UiDangerHover;
+                button.FlatAppearance.MouseOverBackColor = DangerHover;
                 button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(153, 27, 27);
             }
             else if (isCopy)
@@ -679,28 +671,28 @@ namespace CodeBank
             }
             else if (isPrimary)
             {
-                button.BackColor = UiPrimary;
+                button.BackColor = Primary;
                 button.ForeColor = System.Drawing.Color.White;
-                button.FlatAppearance.MouseOverBackColor = UiPrimaryHover;
+                button.FlatAppearance.MouseOverBackColor = PrimaryHover;
                 button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(30, 64, 175);
             }
             else
             {
                 button.BackColor = System.Drawing.Color.FromArgb(226, 232, 240);
-                button.ForeColor = UiInk;
+                button.ForeColor = Ink;
                 button.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(203, 213, 225);
                 button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(148, 163, 184);
             }
         }
 
-        private void ModernButton_Resize(object sender, EventArgs e)
+        private static void ModernButton_Resize(object sender, EventArgs e)
         {
             var button = sender as Button;
             if (button != null)
                 ApplyRoundedButtonRegion(button);
         }
 
-        private void ApplyRoundedButtonRegion(Button button)
+        private static void ApplyRoundedButtonRegion(Button button)
         {
             int radius = Math.Min(9, Math.Max(4, button.Height / 4));
             int diameter = radius * 2;
@@ -718,9 +710,9 @@ namespace CodeBank
                 oldRegion.Dispose();
         }
 
-        private void StyleDataGridView(DataGridView grid)
+        private static void StyleDataGridView(DataGridView grid)
         {
-            grid.BackgroundColor = UiSurface;
+            grid.BackgroundColor = Surface;
             grid.BorderStyle = BorderStyle.None;
             grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             grid.GridColor = System.Drawing.Color.FromArgb(226, 232, 240);
@@ -732,8 +724,8 @@ namespace CodeBank
             grid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             grid.ColumnHeadersHeight = 40;
             grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            grid.DefaultCellStyle.BackColor = UiSurface;
-            grid.DefaultCellStyle.ForeColor = UiInk;
+            grid.DefaultCellStyle.BackColor = Surface;
+            grid.DefaultCellStyle.ForeColor = Ink;
             grid.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(219, 234, 254);
             grid.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.FromArgb(30, 64, 175);
             grid.DefaultCellStyle.Font = new System.Drawing.Font("Tahoma", 9F);
@@ -745,22 +737,22 @@ namespace CodeBank
             grid.MultiSelect = false;
         }
 
-        private void TabControl1_DrawItem(object sender, DrawItemEventArgs e)
+        private static void TabControl1_DrawItem(TabControl tabs, DrawItemEventArgs e)
         {
-            if (e.Index < 0 || e.Index >= tabControl1.TabPages.Count)
+            if (e.Index < 0 || e.Index >= tabs.TabPages.Count)
                 return;
 
             bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
             var bounds = e.Bounds;
-            var backColor = selected ? UiSurface : System.Drawing.Color.FromArgb(226, 232, 240);
-            var foreColor = selected ? UiPrimary : UiMuted;
+            var backColor = selected ? Surface : System.Drawing.Color.FromArgb(226, 232, 240);
+            var foreColor = selected ? Primary : Muted;
 
             using (var brush = new System.Drawing.SolidBrush(backColor))
                 e.Graphics.FillRectangle(brush, bounds);
 
             if (selected)
             {
-                using (var brush = new System.Drawing.SolidBrush(UiPrimary))
+                using (var brush = new System.Drawing.SolidBrush(Primary))
                     e.Graphics.FillRectangle(brush, bounds.Left + 18, bounds.Bottom - 3, bounds.Width - 36, 3);
             }
 
@@ -768,13 +760,13 @@ namespace CodeBank
             using (var tabFont = new System.Drawing.Font("Tahoma", 9F,
                 selected ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular))
             {
-                TextRenderer.DrawText(e.Graphics, tabControl1.TabPages[e.Index].Text,
+                TextRenderer.DrawText(e.Graphics, tabs.TabPages[e.Index].Text,
                     tabFont, textBounds, foreColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             }
         }
 
-        private void ModernListBox_DrawItem(object sender, DrawItemEventArgs e)
+        private static void ModernListBox_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index < 0)
                 return;
