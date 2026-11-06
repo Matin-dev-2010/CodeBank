@@ -6,30 +6,50 @@ on:
       - master
       - "v*"
       - "refactor/**"
+      - "chore/**"
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: codebank-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    name: Restore and build (.NET Framework 4.6.1)
     runs-on: windows-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup MSBuild
+      - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
       - name: Restore NuGet packages
         run: nuget restore CodeBank.sln
 
-      - name: Build
+      - name: Verify .NET Framework reference assemblies
         shell: pwsh
         run: |
           $frameworkPath = Join-Path $env:GITHUB_WORKSPACE "packages/Microsoft.NETFramework.ReferenceAssemblies.net461.1.0.3/build/.NETFramework/v4.6.1"
           if (-not (Test-Path (Join-Path $frameworkPath "mscorlib.dll"))) {
-            throw ".NET Framework 4.6.1 reference assemblies were not restored correctly."
+            Write-Error "The .NET Framework 4.6.1 reference assemblies were not restored. Check CodeBank/packages.config."
+            exit 1
           }
-          msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="$frameworkPath" /m /v:minimal
+          "FRAMEWORK_REFERENCE_PATH=$frameworkPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build solution
+        run: msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="${{ env.FRAMEWORK_REFERENCE_PATH }}" /m /v:minimal
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeBank-build
+          path: CodeBank/bin/Release/
+          if-no-files-found: error
+          retention-days: 14
