@@ -27,6 +27,9 @@
 - Organize snippets by category, programming language, and tag.
 - Store a title, description, source code, language, category, tag, and visibility flag.
 - Browse records in the main grid and category-specific lists.
+- Search snippets by title, description, source code, language, category, or tag from the main tab.
+- Open a search result in its category tab or directly in the editor, while preserving unsaved-change prompts.
+- Copy titles, descriptions, code, language, category, and tags with one-click copy buttons.
 - Use parameterized SQLite commands for data operations.
 - Validate required fields in the service layer.
 - Warn before clearing, navigating away from, or closing the editor when unsaved changes exist.
