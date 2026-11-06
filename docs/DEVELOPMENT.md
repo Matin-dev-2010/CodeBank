@@ -4,7 +4,9 @@
 
 CodeBank is currently a single-user Windows desktop application. The UI calls the service layer, which validates input and delegates persistence to the SQLite repository.
 
-The SQLite database is stored per Windows user at `%LOCALAPPDATA%\\Matin-dev-2010\\CodeBank\\database.db`. On first launch, the application migrates the legacy executable-folder database only when the new destination does not exist. The original database is retained. If both files already exist, the application deliberately does not merge or overwrite either file; compare and back up them manually before deciding which data set to keep.\n\nThe current data flow is:
+The SQLite database is stored per Windows user at `%LOCALAPPDATA%\Matin-dev-2010\CodeBank\database.db`. On first launch, the application migrates the legacy executable-folder database only when the new destination does not exist. The original database is retained. If both files already exist, the application deliberately does not merge or overwrite either file; compare and back up them manually before deciding which data set to keep.
+
+The current data flow is:
 
 `Windows Forms UI -> Services -> Data repository -> SQLite`
 
