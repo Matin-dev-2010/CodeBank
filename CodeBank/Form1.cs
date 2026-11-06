@@ -17,6 +17,7 @@ namespace CodeBank
         private long? _selectedSearchItemId;
         private TextBox _searchTextBox;
         private ListBox _searchResultsList;
+        private System.Windows.Forms.Panel _searchPanel;
 
         private const string ErrorsCategory = "خطاها";
         private const string TutorialsCategory = "اموزشی";
@@ -31,6 +32,7 @@ namespace CodeBank
             ConfigureUi();
             InitializeSearchUi();
             ConfigureCopyButtons();
+            InitializeModernShell();
             WireEditorDirtyTracking();
         }
 
@@ -169,21 +171,35 @@ namespace CodeBank
 
         private void InitializeSearchUi()
         {
-            var searchLabel = CreateLabel("جستجوی کدها", 710, 13);
+            _searchPanel = new System.Windows.Forms.Panel
+            {
+                Name = "pnlSearch",
+                Location = new System.Drawing.Point(710, 12),
+                Size = new System.Drawing.Size(190, 420),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BackColor = System.Drawing.Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(10)
+            };
+
+            var searchLabel = CreateLabel("جستجوی کدها", 10, 12);
+            searchLabel.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
+            searchLabel.ForeColor = System.Drawing.Color.FromArgb(51, 65, 85);
+
             _searchTextBox = new TextBox
             {
                 Name = "txtSearchSnippets",
-                Location = new System.Drawing.Point(710, 32),
-                Size = new System.Drawing.Size(190, 25),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Location = new System.Drawing.Point(10, 38),
+                Size = new System.Drawing.Size(166, 28),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
 
             _searchResultsList = new ListBox
             {
                 Name = "lstSearchResults",
-                Location = new System.Drawing.Point(710, 66),
-                Size = new System.Drawing.Size(190, 333),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right,
+                Location = new System.Drawing.Point(10, 76),
+                Size = new System.Drawing.Size(166, 330),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 FormattingEnabled = true,
                 IntegralHeight = false
             };
@@ -191,13 +207,32 @@ namespace CodeBank
             _searchTextBox.TextChanged += SearchTextBox_TextChanged;
             _searchResultsList.SelectedIndexChanged += SearchResults_SelectedIndexChanged;
 
-            tabpageInsert.Controls.Add(searchLabel);
-            tabpageInsert.Controls.Add(_searchTextBox);
-            tabpageInsert.Controls.Add(_searchResultsList);
-            searchLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            searchLabel.BringToFront();
-            _searchTextBox.BringToFront();
-            _searchResultsList.BringToFront();
+            _searchPanel.Controls.Add(searchLabel);
+            _searchPanel.Controls.Add(_searchTextBox);
+            _searchPanel.Controls.Add(_searchResultsList);
+            tabpageInsert.Controls.Add(_searchPanel);
+
+            txtdesc.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            txtcode.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            tabpageInsert.Resize += MainTab_Resize;
+            UpdateMainEditorLayout();
+            _searchPanel.BringToFront();
+        }
+
+        private void MainTab_Resize(object sender, EventArgs e)
+        {
+            UpdateMainEditorLayout();
+        }
+
+        private void UpdateMainEditorLayout()
+        {
+            if (_searchPanel == null)
+                return;
+
+            _searchPanel.Left = tabpageInsert.ClientSize.Width - _searchPanel.Width - 12;
+            var editorWidth = Math.Max(260, _searchPanel.Left - txtdesc.Left - 24);
+            txtdesc.Width = editorWidth;
+            txtcode.Width = editorWidth;
         }
 
         private void SearchResults_Format(object sender, ListControlConvertEventArgs e)
@@ -409,6 +444,332 @@ namespace CodeBank
             {
                 ShowError("کپی کردن متن", ex);
             }
+        }
+
+
+        private static readonly System.Drawing.Color UiBackground = System.Drawing.Color.FromArgb(241, 245, 249);
+        private static readonly System.Drawing.Color UiSurface = System.Drawing.Color.White;
+        private static readonly System.Drawing.Color UiInk = System.Drawing.Color.FromArgb(30, 41, 59);
+        private static readonly System.Drawing.Color UiMuted = System.Drawing.Color.FromArgb(100, 116, 139);
+        private static readonly System.Drawing.Color UiPrimary = System.Drawing.Color.FromArgb(37, 99, 235);
+        private static readonly System.Drawing.Color UiPrimaryHover = System.Drawing.Color.FromArgb(29, 78, 216);
+        private static readonly System.Drawing.Color UiDanger = System.Drawing.Color.FromArgb(220, 38, 38);
+        private static readonly System.Drawing.Color UiDangerHover = System.Drawing.Color.FromArgb(185, 28, 28);
+        private static readonly System.Drawing.Color UiCodeBackground = System.Drawing.Color.FromArgb(15, 23, 42);
+        private static readonly System.Drawing.Color UiCodeForeground = System.Drawing.Color.FromArgb(226, 232, 240);
+
+        private void InitializeModernShell()
+        {
+            Text = "CodeBank | مدیریت هوشمند کدها";
+            StartPosition = FormStartPosition.CenterScreen;
+            Size = new System.Drawing.Size(1280, 860);
+            MinimumSize = new System.Drawing.Size(1100, 760);
+            BackColor = UiBackground;
+            ForeColor = UiInk;
+            Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+
+            tabControl1.Dock = DockStyle.Fill;
+            tabControl1.DrawMode = TabDrawMode.OwnerDrawFixed;
+            tabControl1.SizeMode = TabSizeMode.Fixed;
+            tabControl1.ItemSize = new System.Drawing.Size(126, 38);
+            tabControl1.Padding = new System.Drawing.Point(14, 5);
+            tabControl1.DrawItem += TabControl1_DrawItem;
+
+            var header = new System.Windows.Forms.Panel
+            {
+                Name = "pnlAppHeader",
+                Dock = DockStyle.Top,
+                Height = 76,
+                BackColor = System.Drawing.Color.FromArgb(15, 23, 42),
+                Padding = new Padding(22, 8, 22, 8)
+            };
+
+            var brandPanel = new System.Windows.Forms.Panel
+            {
+                Dock = DockStyle.Right,
+                Width = 300,
+                BackColor = System.Drawing.Color.Transparent
+            };
+
+            var brandTitle = new Label
+            {
+                Text = "CodeBank",
+                Dock = DockStyle.Top,
+                Height = 36,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
+                ForeColor = System.Drawing.Color.White,
+                Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold)
+            };
+
+            var brandSubtitle = new Label
+            {
+                Text = "کتابخانه شخصی قطعه‌کدها",
+                Dock = DockStyle.Top,
+                Height = 23,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
+                ForeColor = System.Drawing.Color.FromArgb(148, 163, 184),
+                Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular)
+            };
+
+            brandPanel.Controls.Add(brandSubtitle);
+            brandPanel.Controls.Add(brandTitle);
+
+            var headerMeta = new Label
+            {
+                Text = "LOCAL LIBRARY   •   SQLITE",
+                Dock = DockStyle.Left,
+                Width = 240,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
+                ForeColor = System.Drawing.Color.FromArgb(147, 197, 253),
+                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
+            };
+
+            header.Controls.Add(brandPanel);
+            header.Controls.Add(headerMeta);
+
+            var status = new StatusStrip
+            {
+                Name = "statusStripMain",
+                Dock = DockStyle.Bottom,
+                SizingGrip = false,
+                BackColor = System.Drawing.Color.White,
+                ForeColor = UiMuted,
+                Padding = new Padding(12, 3, 12, 3)
+            };
+            status.Items.Add(new ToolStripStatusLabel("آماده به کار")
+            {
+                ForeColor = System.Drawing.Color.FromArgb(15, 118, 110),
+                Font = new System.Drawing.Font("Tahoma", 8.5F, System.Drawing.FontStyle.Bold)
+            });
+            status.Items.Add(new ToolStripStatusLabel("  •  اطلاعات به‌صورت محلی ذخیره می‌شوند")
+            {
+                ForeColor = UiMuted,
+                Spring = true,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
+            });
+            status.Items.Add(new ToolStripStatusLabel("CodeBank")
+            {
+                ForeColor = UiMuted
+            });
+
+            Controls.Add(header);
+            Controls.Add(status);
+            Controls.SetChildIndex(header, 0);
+            Controls.SetChildIndex(status, 1);
+            Controls.SetChildIndex(tabControl1, 2);
+
+            ApplyVisualTheme(this);
+            tabControl1.Invalidate();
+        }
+
+        private void ApplyVisualTheme(Control root)
+        {
+            foreach (Control control in root.Controls)
+            {
+                control.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+
+                if (control is TabPage)
+                {
+                    control.BackColor = UiBackground;
+                    control.ForeColor = UiInk;
+                    control.Padding = new Padding(12);
+                }
+                else if (control is Label)
+                {
+                    control.ForeColor = UiMuted;
+                }
+                else if (control is TextBox)
+                {
+                    var textBox = (TextBox)control;
+                    textBox.BackColor = UiSurface;
+                    textBox.ForeColor = UiInk;
+                    textBox.BorderStyle = BorderStyle.FixedSingle;
+                    textBox.Font = new System.Drawing.Font("Tahoma", 9.5F);
+                    textBox.TextAlign = HorizontalAlignment.Right;
+                }
+                else if (control is RichTextBox)
+                {
+                    var editor = (RichTextBox)control;
+                    editor.BackColor = UiCodeBackground;
+                    editor.ForeColor = UiCodeForeground;
+                    editor.BorderStyle = BorderStyle.None;
+                    editor.Font = new System.Drawing.Font("Consolas", 10F);
+                    editor.RightToLeft = RightToLeft.No;
+                    editor.DetectUrls = false;
+                    editor.WordWrap = false;
+                }
+                else if (control is ComboBox)
+                {
+                    var combo = (ComboBox)control;
+                    combo.BackColor = UiSurface;
+                    combo.ForeColor = UiInk;
+                    combo.FlatStyle = FlatStyle.Flat;
+                    combo.Font = new System.Drawing.Font("Tahoma", 9F);
+                }
+                else if (control is ListBox)
+                {
+                    var list = (ListBox)control;
+                    list.BackColor = UiSurface;
+                    list.ForeColor = UiInk;
+                    list.BorderStyle = BorderStyle.None;
+                    list.Font = new System.Drawing.Font("Tahoma", 9F);
+                    list.DrawMode = DrawMode.OwnerDrawFixed;
+                    list.ItemHeight = 32;
+                    list.DrawItem -= ModernListBox_DrawItem;
+                    list.DrawItem += ModernListBox_DrawItem;
+                }
+                else if (control is DataGridView)
+                {
+                    StyleDataGridView((DataGridView)control);
+                }
+                else if (control is Button)
+                {
+                    StyleButton((Button)control);
+                }
+                else if (control is CheckBox)
+                {
+                    var check = (CheckBox)control;
+                    check.ForeColor = UiInk;
+                    check.Font = new System.Drawing.Font("Tahoma", 9F);
+                    check.Cursor = Cursors.Hand;
+                }
+                else if (control is Panel)
+                {
+                    control.BackColor = UiSurface;
+                }
+
+                if (control.HasChildren)
+                    ApplyVisualTheme(control);
+            }
+        }
+
+        private void StyleButton(Button button)
+        {
+            bool isDanger = button.Name.IndexOf("delete", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                button.Text.IndexOf("حذف", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isCopy = button.Text.IndexOf("کپی", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isPrimary = button.Name.IndexOf("save", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                button.Name.IndexOf("update", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                button.Text.IndexOf("ذخیره", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                button.Text.IndexOf("بروزرسانی", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 0;
+            button.UseVisualStyleBackColor = false;
+            button.Cursor = Cursors.Hand;
+            button.Font = new System.Drawing.Font("Tahoma", 8.5F, System.Drawing.FontStyle.Bold);
+            button.Height = Math.Max(button.Height, 34);
+
+            if (isDanger)
+            {
+                button.BackColor = UiDanger;
+                button.ForeColor = System.Drawing.Color.White;
+                button.FlatAppearance.MouseOverBackColor = UiDangerHover;
+                button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(153, 27, 27);
+            }
+            else if (isCopy)
+            {
+                button.BackColor = System.Drawing.Color.FromArgb(224, 242, 254);
+                button.ForeColor = System.Drawing.Color.FromArgb(3, 105, 161);
+                button.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(186, 230, 253);
+                button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(125, 211, 252);
+            }
+            else if (isPrimary)
+            {
+                button.BackColor = UiPrimary;
+                button.ForeColor = System.Drawing.Color.White;
+                button.FlatAppearance.MouseOverBackColor = UiPrimaryHover;
+                button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(30, 64, 175);
+            }
+            else
+            {
+                button.BackColor = System.Drawing.Color.FromArgb(226, 232, 240);
+                button.ForeColor = UiInk;
+                button.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(203, 213, 225);
+                button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(148, 163, 184);
+            }
+        }
+
+        private void StyleDataGridView(DataGridView grid)
+        {
+            grid.BackgroundColor = UiSurface;
+            grid.BorderStyle = BorderStyle.None;
+            grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            grid.GridColor = System.Drawing.Color.FromArgb(226, 232, 240);
+            grid.EnableHeadersVisualStyles = false;
+            grid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            grid.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(30, 41, 59);
+            grid.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White;
+            grid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
+            grid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            grid.ColumnHeadersHeight = 40;
+            grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            grid.DefaultCellStyle.BackColor = UiSurface;
+            grid.DefaultCellStyle.ForeColor = UiInk;
+            grid.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(219, 234, 254);
+            grid.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.FromArgb(30, 64, 175);
+            grid.DefaultCellStyle.Font = new System.Drawing.Font("Tahoma", 9F);
+            grid.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
+            grid.RowTemplate.Height = 34;
+            grid.RowHeadersVisible = false;
+            grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            grid.MultiSelect = false;
+        }
+
+        private void TabControl1_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0 || e.Index >= tabControl1.TabPages.Count)
+                return;
+
+            bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            var bounds = e.Bounds;
+            var backColor = selected ? UiSurface : System.Drawing.Color.FromArgb(226, 232, 240);
+            var foreColor = selected ? UiPrimary : UiMuted;
+
+            using (var brush = new System.Drawing.SolidBrush(backColor))
+                e.Graphics.FillRectangle(brush, bounds);
+
+            if (selected)
+            {
+                using (var brush = new System.Drawing.SolidBrush(UiPrimary))
+                    e.Graphics.FillRectangle(brush, bounds.Left + 18, bounds.Bottom - 3, bounds.Width - 36, 3);
+            }
+
+            var textBounds = new System.Drawing.Rectangle(bounds.X + 4, bounds.Y + 2, bounds.Width - 8, bounds.Height - 4);
+            TextRenderer.DrawText(e.Graphics, tabControl1.TabPages[e.Index].Text,
+                new System.Drawing.Font("Tahoma", 9F, selected ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular),
+                textBounds, foreColor,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        }
+
+        private void ModernListBox_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0)
+                return;
+
+            var list = sender as ListBox;
+            if (list == null)
+                return;
+
+            bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            var backColor = selected ? System.Drawing.Color.FromArgb(219, 234, 254) : list.BackColor;
+            var foreColor = selected ? System.Drawing.Color.FromArgb(30, 64, 175) : list.ForeColor;
+
+            using (var brush = new System.Drawing.SolidBrush(backColor))
+                e.Graphics.FillRectangle(brush, e.Bounds);
+
+            var item = list.Items[e.Index] as CodeItem;
+            var text = item == null ? Convert.ToString(list.Items[e.Index]) : item.Title;
+            if (item != null && list.Name == "lstSearchResults")
+                text = item.Title + "  ·  " + item.Language;
+
+            var textBounds = new System.Drawing.Rectangle(e.Bounds.X + 8, e.Bounds.Y + 2, e.Bounds.Width - 16, e.Bounds.Height - 4);
+            TextRenderer.DrawText(e.Graphics, text, list.Font, textBounds, foreColor,
+                TextFormatFlags.Right | TextFormatFlags.RightToLeft | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+            if ((e.State & DrawItemState.Focus) == DrawItemState.Focus)
+                e.DrawFocusRectangle();
         }
 
         private void WireEditorDirtyTracking()
