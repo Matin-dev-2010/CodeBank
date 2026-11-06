@@ -659,6 +659,9 @@ namespace CodeBank
             button.Cursor = Cursors.Hand;
             button.Font = new System.Drawing.Font("Tahoma", 8.5F, System.Drawing.FontStyle.Bold);
             button.Height = Math.Max(button.Height, 34);
+            button.Resize -= ModernButton_Resize;
+            button.Resize += ModernButton_Resize;
+            ApplyRoundedButtonRegion(button);
 
             if (isDanger)
             {
@@ -688,6 +691,31 @@ namespace CodeBank
                 button.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(203, 213, 225);
                 button.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(148, 163, 184);
             }
+        }
+
+        private void ModernButton_Resize(object sender, EventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null)
+                ApplyRoundedButtonRegion(button);
+        }
+
+        private void ApplyRoundedButtonRegion(Button button)
+        {
+            int radius = Math.Min(9, Math.Max(4, button.Height / 4));
+            int diameter = radius * 2;
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            path.AddArc(0, 0, diameter, diameter, 180, 90);
+            path.AddArc(button.Width - diameter - 1, 0, diameter, diameter, 270, 90);
+            path.AddArc(button.Width - diameter - 1, button.Height - diameter - 1, diameter, diameter, 0, 90);
+            path.AddArc(0, button.Height - diameter - 1, diameter, diameter, 90, 90);
+            path.CloseFigure();
+
+            var oldRegion = button.Region;
+            button.Region = new System.Drawing.Region(path);
+            path.Dispose();
+            if (oldRegion != null)
+                oldRegion.Dispose();
         }
 
         private void StyleDataGridView(DataGridView grid)
@@ -737,10 +765,13 @@ namespace CodeBank
             }
 
             var textBounds = new System.Drawing.Rectangle(bounds.X + 4, bounds.Y + 2, bounds.Width - 8, bounds.Height - 4);
-            TextRenderer.DrawText(e.Graphics, tabControl1.TabPages[e.Index].Text,
-                new System.Drawing.Font("Tahoma", 9F, selected ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular),
-                textBounds, foreColor,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            using (var tabFont = new System.Drawing.Font("Tahoma", 9F,
+                selected ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular))
+            {
+                TextRenderer.DrawText(e.Graphics, tabControl1.TabPages[e.Index].Text,
+                    tabFont, textBounds, foreColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            }
         }
 
         private void ModernListBox_DrawItem(object sender, DrawItemEventArgs e)
@@ -762,7 +793,7 @@ namespace CodeBank
             var item = list.Items[e.Index] as CodeItem;
             var text = item == null ? Convert.ToString(list.Items[e.Index]) : item.Title;
             if (item != null && list.Name == "lstSearchResults")
-                text = item.Title + "  ·  " + item.Language;
+                text = item.Title + "  ·  " + item.Language + "  ·  " + item.Tag;
 
             var textBounds = new System.Drawing.Rectangle(e.Bounds.X + 8, e.Bounds.Y + 2, e.Bounds.Width - 16, e.Bounds.Height - 4);
             TextRenderer.DrawText(e.Graphics, text, list.Font, textBounds, foreColor,
