@@ -12,4 +12,12 @@ This project follows a lightweight Keep a Changelog-style format. Version number
 - Add repository issue templates and dependency update automation.
 
 ### Application
-- No application feature or runtime behavior changes are included in this repository-maintenance update.
+- Store the SQLite database in the current user's LocalAppData directory.
+- Migrate a legacy executable-folder database without deleting the original or overwriting an existing destination.
+- Preserve SQLite WAL and rollback-journal sidecar files during first-run migration.
+- Track SQLite schema version 1 and initialize it transactionally.
+- Restore the previously selected grid record when unsaved navigation is cancelled.
+- Reload the persisted record after a save-and-navigate operation to avoid displaying stale values.
+
+### Tests
+- Add NUnit unit tests for service validation and legacy database migration.

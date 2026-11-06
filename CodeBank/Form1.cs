@@ -13,6 +13,7 @@ namespace CodeBank
         private long? _editingId;
         private bool _isDirty;
         private bool _isLoading;
+        private long? _selectedGridItemId;
 
         private const string ErrorsCategory = "خطاها";
         private const string TutorialsCategory = "اموزشی";
@@ -199,10 +200,19 @@ namespace CodeBank
 
         private void RefreshAllData()
         {
-            LoadDataGrid();
-            LoadCategoryList(listErrors, ErrorsCategory);
-            LoadCategoryList(listTutorials, TutorialsCategory);
-            LoadCategoryList(listBoxTemplateCode, TemplatesCategory);
+            var wasLoading = _isLoading;
+            _isLoading = true;
+            try
+            {
+                LoadDataGrid();
+                LoadCategoryList(listErrors, ErrorsCategory);
+                LoadCategoryList(listTutorials, TutorialsCategory);
+                LoadCategoryList(listBoxTemplateCode, TemplatesCategory);
+            }
+            finally
+            {
+                _isLoading = wasLoading;
+            }
         }
 
         private void LoadDataGrid()
@@ -291,10 +301,62 @@ namespace CodeBank
             if (!(dataGridView1.CurrentRow.DataBoundItem is CodeItem item))
                 return;
 
-            if (!PrepareForNavigation())
+            if (!_isDirty && _editingId == item.Id)
+            {
+                _selectedGridItemId = item.Id;
                 return;
+            }
 
-            LoadItemIntoEditor(item);
+            if (!PrepareForNavigation())
+            {
+                RestoreGridSelection(_selectedGridItemId);
+                return;
+            }
+
+            var refreshedItem = _service.GetById(item.Id);
+            if (refreshedItem == null)
+            {
+                RestoreGridSelection(_selectedGridItemId);
+                return;
+            }
+
+            _selectedGridItemId = refreshedItem.Id;
+            RestoreGridSelection(refreshedItem.Id);
+            LoadItemIntoEditor(refreshedItem);
+        }
+
+        private void RestoreGridSelection(long? itemId)
+        {
+            var wasLoading = _isLoading;
+            _isLoading = true;
+            try
+            {
+                dataGridView1.ClearSelection();
+
+                if (!itemId.HasValue)
+                {
+                    dataGridView1.CurrentCell = null;
+                    return;
+                }
+
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    var item = row.DataBoundItem as CodeItem;
+                    if (item == null || item.Id != itemId.Value)
+                        continue;
+
+                    row.Selected = true;
+                    if (dataGridView1.Columns.Count > 0)
+                        dataGridView1.CurrentCell = row.Cells[0];
+                    return;
+                }
+
+                dataGridView1.CurrentCell = null;
+            }
+            finally
+            {
+                _isLoading = wasLoading;
+            }
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -406,7 +468,13 @@ namespace CodeBank
             if (!PrepareForNavigation())
                 return;
 
-            LoadItemIntoEditor(item);
+            var refreshedItem = _service.GetById(item.Id);
+            if (refreshedItem == null)
+                return;
+
+            _selectedGridItemId = refreshedItem.Id;
+            RestoreGridSelection(refreshedItem.Id);
+            LoadItemIntoEditor(refreshedItem);
             tabControl1.SelectedTab = tabpageInsert;
             txtname.Focus();
         }
@@ -519,6 +587,7 @@ namespace CodeBank
             try
             {
                 _editingId = null;
+                _selectedGridItemId = null;
                 txtname.Clear();
                 txtdesc.Clear();
                 txtcode.Clear();

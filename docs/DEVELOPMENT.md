@@ -4,13 +4,15 @@
 
 CodeBank is currently a single-user Windows desktop application. The UI calls the service layer, which validates input and delegates persistence to the SQLite repository.
 
+The SQLite database is stored per Windows user at `%LOCALAPPDATA%\Matin-dev-2010\CodeBank\database.db`. On first launch, the application migrates the legacy executable-folder database only when the new destination does not exist. The original database is retained. If both files already exist, the application deliberately does not merge or overwrite either file; compare and back up them manually before deciding which data set to keep.
+
 The current data flow is:
 
 `Windows Forms UI -> Services -> Data repository -> SQLite`
 
 ## Database compatibility
 
-The database initializer uses `CREATE TABLE IF NOT EXISTS` and creates indexes. This protects an existing table from being dropped during startup, but it is not a migration framework.
+The database initializer tracks the schema version with SQLite `PRAGMA user_version` and applies the initial schema (version 1) transactionally. Existing version-0 databases are initialized without dropping the existing table. Upgrade migrations beyond version 1 must be added explicitly before changing the schema.
 
 Before changing the schema:
 
@@ -20,7 +22,9 @@ Before changing the schema:
 4. Verify that existing records survive the migration.
 5. Test both a fresh database and an upgrade from the previous schema.
 
-Do not change the database location without a migration strategy that preserves existing user data.
+The current location migration preserves the original file and copies SQLite WAL / rollback-journal sidecars when present. If both the old and new locations contain databases, no automatic merge is attempted. Back up both files and compare them manually.
+
+Do not change the database location again without a migration strategy that preserves existing user data.
 
 ## Verification checklist
 
@@ -37,7 +41,7 @@ For changes affecting the editor or persistence, manually verify:
 
 ## CI and artifacts
 
-The GitHub Actions workflow restores NuGet packages, builds the solution in Release mode on Windows, and uploads the output directory as a short-lived workflow artifact.
+The GitHub Actions workflow restores NuGet packages, builds the solution in Release mode on Windows, runs the NUnit unit tests, and uploads the application output and test results as short-lived artifacts. The tag-triggered release workflow builds a per-user installer using Inno Setup.
 
 A successful build proves compilation only. It does not replace automated tests or manual UI/database verification.
 

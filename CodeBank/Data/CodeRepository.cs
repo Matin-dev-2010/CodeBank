@@ -5,7 +5,7 @@ using CodeBank.Models;
 
 namespace CodeBank.Data
 {
-    public class CodeRepository
+    public class CodeRepository : ICodeRepository
     {
         public List<CodeItem> GetAll()
         {

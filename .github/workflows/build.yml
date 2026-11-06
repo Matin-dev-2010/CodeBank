@@ -5,6 +5,8 @@ on:
     branches:
       - master
       - "v*"
+      - "feat/**"
+      - "fix/**"
       - "refactor/**"
       - "chore/**"
   pull_request:
@@ -18,10 +20,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Restore and build (.NET Framework 4.6.1)
+  build-and-test:
+    name: Build and test
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -33,12 +35,12 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore CodeBank.sln
 
-      - name: Verify .NET Framework reference assemblies
+      - name: Verify .NET Framework 4.6.1 reference assemblies
         shell: pwsh
         run: |
           $frameworkPath = Join-Path $env:GITHUB_WORKSPACE "packages/Microsoft.NETFramework.ReferenceAssemblies.net461.1.0.3/build/.NETFramework/v4.6.1"
           if (-not (Test-Path (Join-Path $frameworkPath "mscorlib.dll"))) {
-            Write-Error "The .NET Framework 4.6.1 reference assemblies were not restored. Check CodeBank/packages.config."
+            Write-Error "The .NET Framework 4.6.1 reference assemblies were not restored."
             exit 1
           }
           "FRAMEWORK_REFERENCE_PATH=$frameworkPath" | Out-File -FilePath $env:GITHUB_ENV -Append
@@ -46,10 +48,22 @@ jobs:
       - name: Build solution
         run: msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="${{ env.FRAMEWORK_REFERENCE_PATH }}" /m /v:minimal
 
-      - name: Upload build output
+      - name: Run unit tests
+        run: dotnet test CodeBank.Tests/CodeBank.Tests.csproj --configuration Release --no-build --no-restore --logger "console;verbosity=normal" --logger "trx;LogFileName=CodeBank.Tests.trx" --results-directory TestResults
+
+      - name: Upload application build
         uses: actions/upload-artifact@v4
         with:
           name: CodeBank-build
           path: CodeBank/bin/Release/
           if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeBank-test-results
+          path: "TestResults/*.trx"
+          if-no-files-found: ignore
           retention-days: 14

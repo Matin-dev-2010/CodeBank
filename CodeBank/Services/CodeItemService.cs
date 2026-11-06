@@ -7,10 +7,13 @@ namespace CodeBank.Services
 {
     public class CodeItemService
     {
-        private readonly CodeRepository _repository;
+        private readonly ICodeRepository _repository;
 
-        public CodeItemService(CodeRepository repository)
+        public CodeItemService(ICodeRepository repository)
         {
+            if (repository == null)
+                throw new ArgumentNullException("repository");
+
             _repository = repository;
         }
 
