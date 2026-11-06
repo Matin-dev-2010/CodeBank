@@ -34,6 +34,31 @@ ORDER BY CreateAt DESC, Id DESC;";
             }
         }
 
+        public List<CodeItem> Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<CodeItem>();
+
+            const string sql = @"
+SELECT Id, Title, Description, Code, Language, Category, Tag, isPublic, CreateAt
+FROM CodeFormFile
+WHERE instr(lower(COALESCE(Title, '')), lower(@Query)) > 0
+   OR instr(lower(COALESCE(Description, '')), lower(@Query)) > 0
+   OR instr(lower(COALESCE(Code, '')), lower(@Query)) > 0
+   OR instr(lower(COALESCE(Language, '')), lower(@Query)) > 0
+   OR instr(lower(COALESCE(Category, '')), lower(@Query)) > 0
+   OR instr(lower(COALESCE(Tag, '')), lower(@Query)) > 0
+ORDER BY CreateAt DESC, Id DESC;";
+
+            using (var connection = Database.CreateConnection())
+            using (var command = new SQLiteCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@Query", query.Trim());
+                connection.Open();
+                return ReadList(command);
+            }
+        }
+
         public CodeItem GetById(long id)
         {
             const string sql = @"

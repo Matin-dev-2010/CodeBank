@@ -14,6 +14,9 @@ namespace CodeBank
         private bool _isDirty;
         private bool _isLoading;
         private long? _selectedGridItemId;
+        private long? _selectedSearchItemId;
+        private TextBox _searchTextBox;
+        private ListBox _searchResultsList;
 
         private const string ErrorsCategory = "خطاها";
         private const string TutorialsCategory = "اموزشی";
@@ -26,6 +29,8 @@ namespace CodeBank
             _service = new CodeItemService(new CodeRepository());
 
             ConfigureUi();
+            InitializeSearchUi();
+            ConfigureCopyButtons();
             WireEditorDirtyTracking();
         }
 
@@ -161,6 +166,251 @@ namespace CodeBank
             chkTemplateCodePublic.Enabled = false;
         }
 
+
+        private void InitializeSearchUi()
+        {
+            var searchLabel = CreateLabel("جستجوی کدها", 710, 13);
+            _searchTextBox = new TextBox
+            {
+                Name = "txtSearchSnippets",
+                Location = new System.Drawing.Point(710, 32),
+                Size = new System.Drawing.Size(190, 25),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+
+            _searchResultsList = new ListBox
+            {
+                Name = "lstSearchResults",
+                Location = new System.Drawing.Point(710, 66),
+                Size = new System.Drawing.Size(190, 333),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right,
+                FormattingEnabled = true,
+                IntegralHeight = false
+            };
+            _searchResultsList.Format += SearchResults_Format;
+            _searchTextBox.TextChanged += SearchTextBox_TextChanged;
+            _searchResultsList.SelectedIndexChanged += SearchResults_SelectedIndexChanged;
+
+            tabpageInsert.Controls.Add(searchLabel);
+            tabpageInsert.Controls.Add(_searchTextBox);
+            tabpageInsert.Controls.Add(_searchResultsList);
+            searchLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            searchLabel.BringToFront();
+            _searchTextBox.BringToFront();
+            _searchResultsList.BringToFront();
+        }
+
+        private void SearchResults_Format(object sender, ListControlConvertEventArgs e)
+        {
+            var item = e.ListItem as CodeItem;
+            if (item != null)
+                e.Value = string.Format("{0}  |  {1}  |  {2}",
+                    item.Title, item.Language, item.Tag);
+        }
+
+        private void SearchTextBox_TextChanged(object sender, EventArgs e)
+        {
+            RefreshSearchResults();
+        }
+
+        private void RefreshSearchResults()
+        {
+            if (_searchResultsList == null)
+                return;
+
+            var previousLoadingState = _isLoading;
+            _isLoading = true;
+            try
+            {
+                _searchResultsList.DataSource = null;
+                var query = _searchTextBox.Text.Trim();
+                if (query.Length == 0)
+                    return;
+
+                _searchResultsList.DataSource = _service.Search(query);
+            }
+            catch (Exception ex)
+            {
+                ShowError("جستجوی کدها", ex);
+            }
+            finally
+            {
+                _isLoading = previousLoadingState;
+            }
+        }
+
+        private void SearchResults_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_isLoading)
+                return;
+
+            var selected = _searchResultsList.SelectedItem as CodeItem;
+            if (selected == null)
+                return;
+
+            var previousId = _selectedSearchItemId;
+            if (!PrepareForNavigation())
+            {
+                RestoreSearchSelection(previousId);
+                return;
+            }
+
+            try
+            {
+                var item = _service.GetById(selected.Id);
+                if (item == null)
+                {
+                    RefreshSearchResults();
+                    return;
+                }
+
+                _selectedSearchItemId = item.Id;
+
+                if (item.Category == ErrorsCategory)
+                    OpenSearchResultInCategory(item, txttabpageErrors, listErrors);
+                else if (item.Category == TutorialsCategory)
+                    OpenSearchResultInCategory(item, tabpageTutorials, listTutorials);
+                else if (item.Category == TemplatesCategory)
+                    OpenSearchResultInCategory(item, tabpageTemplateCode, listBoxTemplateCode);
+                else
+                {
+                    LoadItemIntoEditor(item);
+                    _selectedGridItemId = item.Id;
+                    RestoreGridSelection(item.Id);
+                    tabControl1.SelectedTab = tabpageInsert;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("باز کردن نتیجه جستجو", ex);
+                RestoreSearchSelection(previousId);
+            }
+        }
+
+        private void OpenSearchResultInCategory(CodeItem item, TabPage tab, ListBox list)
+        {
+            tabControl1.SelectedTab = tab;
+            var wasLoading = _isLoading;
+            _isLoading = true;
+            try
+            {
+                list.SelectedIndex = -1;
+                for (var i = 0; i < list.Items.Count; i++)
+                {
+                    var listItem = list.Items[i] as CodeItem;
+                    if (listItem != null && listItem.Id == item.Id)
+                    {
+                        list.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            finally
+            {
+                _isLoading = wasLoading;
+            }
+
+            ShowCategoryItem(item,
+                tab == txttabpageErrors ? txtErrorTitle : tab == tabpageTutorials ? txtTutorialTitle : txtTemplateCodeTitle,
+                tab == txttabpageErrors ? txtErrorDesc : tab == tabpageTutorials ? txtTutorialDesc : txtTemplateCodeDesc,
+                tab == txttabpageErrors ? txtErrorCode : tab == tabpageTutorials ? txtTutorialCode : txtTemplateCodeCode,
+                tab == txttabpageErrors ? txtErrorLang : tab == tabpageTutorials ? txtTutorialLang : txtTemplateCodeLang,
+                tab == txttabpageErrors ? txtErrorTag : tab == tabpageTutorials ? txtTutorialTag : txtTemplateCodeTag,
+                tab == txttabpageErrors ? chkErrorPublic : tab == tabpageTutorials ? chkTutorialPublic : chkTemplateCodePublic);
+        }
+
+        private void RestoreSearchSelection(long? itemId)
+        {
+            var wasLoading = _isLoading;
+            _isLoading = true;
+            try
+            {
+                _searchResultsList.ClearSelected();
+                if (!itemId.HasValue)
+                    return;
+
+                for (var i = 0; i < _searchResultsList.Items.Count; i++)
+                {
+                    var item = _searchResultsList.Items[i] as CodeItem;
+                    if (item != null && item.Id == itemId.Value)
+                    {
+                        _searchResultsList.SelectedIndex = i;
+                        return;
+                    }
+                }
+            }
+            finally
+            {
+                _isLoading = wasLoading;
+            }
+        }
+
+        private void ConfigureCopyButtons()
+        {
+            AddCopyButton(txtname);
+            AddCopyButton(cmblan);
+            AddCopyButton(cmbcat);
+            AddCopyButton(txttag);
+            AddCopyButton(txtdesc);
+            AddCopyButton(txtcode);
+
+            AddCopyButton(txtErrorTitle);
+            AddCopyButton(txtErrorLang);
+            AddCopyButton(txtErrorDesc);
+            AddCopyButton(txtErrorCode);
+            AddCopyButton(txtErrorTag);
+
+            AddCopyButton(txtTutorialTitle);
+            AddCopyButton(txtTutorialLang);
+            AddCopyButton(txtTutorialDesc);
+            AddCopyButton(txtTutorialCode);
+            AddCopyButton(txtTutorialTag);
+
+            AddCopyButton(txtTemplateCodeTitle);
+            AddCopyButton(txtTemplateCodeLang);
+            AddCopyButton(txtTemplateCodeDesc);
+            AddCopyButton(txtTemplateCodeCode);
+            AddCopyButton(txtTemplateCodeTag);
+        }
+
+        private void AddCopyButton(Control target)
+        {
+            var originalRight = target.Right;
+            var button = new Button
+            {
+                Text = "کپی",
+                Size = new System.Drawing.Size(36, 24),
+                Location = new System.Drawing.Point(originalRight - 38, target.Top),
+                Anchor = (target.Anchor & AnchorStyles.Right) != 0
+                    ? AnchorStyles.Top | AnchorStyles.Right
+                    : AnchorStyles.Top | AnchorStyles.Left,
+                TabStop = false,
+                Font = new System.Drawing.Font("Tahoma", 7F),
+                UseVisualStyleBackColor = true
+            };
+
+            target.Width = Math.Max(45, target.Width - 40);
+            button.Click += delegate { CopyControlText(target); };
+            target.Parent.Controls.Add(button);
+            button.BringToFront();
+        }
+
+        private void CopyControlText(Control target)
+        {
+            var value = target.Text;
+            if (string.IsNullOrEmpty(value))
+                return;
+
+            try
+            {
+                Clipboard.SetText(value);
+            }
+            catch (Exception ex)
+            {
+                ShowError("کپی کردن متن", ex);
+            }
+        }
+
         private void WireEditorDirtyTracking()
         {
             txtname.TextChanged += EditorChanged;
@@ -208,6 +458,7 @@ namespace CodeBank
                 LoadCategoryList(listErrors, ErrorsCategory);
                 LoadCategoryList(listTutorials, TutorialsCategory);
                 LoadCategoryList(listBoxTemplateCode, TemplatesCategory);
+                RefreshSearchResults();
             }
             finally
             {

@@ -7,6 +7,7 @@ namespace CodeBank.Data
     {
         List<CodeItem> GetAll();
         List<CodeItem> GetByCategory(string category);
+        List<CodeItem> Search(string query);
         CodeItem GetById(long id);
         long Insert(CodeItem item);
         void Update(CodeItem item);
