@@ -61,6 +61,7 @@
     <Compile Include="Data\ICodeRepository.cs" />
     <Compile Include="Services\CodeItemService.cs" />
     <Compile Include="Services\FormStateService.cs" />
+    <Compile Include="UI\CodeBankTheme.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx"><DependentUpon>Form1.cs</DependentUpon></EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
