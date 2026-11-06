@@ -121,7 +121,7 @@ The GitHub Actions workflow uses the .NET Framework 4.6.1 reference-assemblies N
 
 ## Data storage
 
-The current application creates and uses a SQLite database named `database.db` in the application executable directory.
+The application stores its SQLite database at `%LOCALAPPDATA%\\Matin-dev-2010\\CodeBank\\database.db`. On first launch after this update, if the new location does not yet contain a database, CodeBank copies the legacy `database.db` from the application directory. The original file is retained as a backup. Existing data in the new location is never overwritten.
 
 The schema initializer creates the `CodeFormFile` table and indexes only when they do not already exist. It does not drop the existing table or migrate arbitrary future schema changes.
 
@@ -137,9 +137,9 @@ The workflow currently verifies compilation; it does not represent a complete au
 
 - The application currently uses a local SQLite database and has no synchronization or multi-user server.
 - Schema initialization is not a versioned migration system.
-- Automated unit and integration tests have not yet been added.
-- Database placement beside the executable may require write permissions in the installation directory. A per-user application-data location should be introduced with a safe migration path before a packaged installer is distributed.
-- No signed installer or production release binary is currently published.
+- Unit tests cover service validation and legacy database-file migration. Full UI automation and end-to-end database tests are still future work.
+- The application targets .NET Framework 4.6.1; this is a legacy framework target and should be upgraded only with a deliberate compatibility plan.
+- A Windows installer can be generated from a version tag. It is not code-signed; Windows SmartScreen may display an unknown-publisher warning.
 
 These are documented follow-up areas, not features that should be assumed to exist.
 
