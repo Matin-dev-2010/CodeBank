@@ -26,9 +26,9 @@
 - Create, view, update, and delete code snippets.
 - Organize snippets by category, programming language, and tag.
 - Store a title, description, source code, language, category, tag, and visibility flag.
-- Browse records in the main grid and category-specific lists.
+- Browse records in the main grid and category-specific lists, including dedicated **Patterns** and **Algorithms** tabs with the same detail, copy, edit, and delete actions as the existing categories.
 - Search snippets by title, description, source code, language, category, or tag from the main tab.
-- Open a search result in its category tab or directly in the editor, while preserving unsaved-change prompts.
+- Open a search result in its matching category tab (Errors, Tutorials, Templates, Patterns, or Algorithms) or directly in the editor, while preserving unsaved-change prompts.
 - Copy titles, descriptions, code, language, category, and tags with one-click copy buttons.
 - Use a modern desktop interface with a navy brand header, a consistent blue/slate color system, rounded semantic action buttons, custom tab styling, readable data grids, and dedicated code-editor surfaces.
 - Use parameterized SQLite commands for data operations.
@@ -76,6 +76,8 @@ CodeBank/
 │   ├── Services/
 │   │   ├── CodeItemService.cs
 │   │   └── FormStateService.cs
+│   ├── Ui/
+│   │   └── CodeBankTheme.cs
 │   ├── Properties/
 │   ├── Form1.cs
 │   ├── Form1.Designer.cs
