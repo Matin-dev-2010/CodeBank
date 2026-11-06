@@ -19,10 +19,29 @@ namespace CodeBank
         private TextBox _searchTextBox;
         private ListBox _searchResultsList;
         private System.Windows.Forms.Panel _searchPanel;
+        private readonly Dictionary<string, CategoryTabBinding> _additionalCategoryTabs =
+            new Dictionary<string, CategoryTabBinding>();
+
+        private sealed class CategoryTabBinding
+        {
+            public string Category;
+            public TabPage Tab;
+            public ListBox List;
+            public TextBox Title;
+            public TextBox Description;
+            public RichTextBox Code;
+            public TextBox Language;
+            public TextBox Tag;
+            public CheckBox IsPublic;
+            public Button Edit;
+            public Button Delete;
+        }
 
         private const string ErrorsCategory = "خطاها";
         private const string TutorialsCategory = "اموزشی";
         private const string TemplatesCategory = "کد اماده";
+        private const string PatternsCategory = "الگوها";
+        private const string AlgorithmsCategory = "الگوریتم";
 
         public frmCodeBank()
         {
@@ -31,6 +50,7 @@ namespace CodeBank
             _service = new CodeItemService(new CodeRepository());
 
             ConfigureUi();
+            InitializeAdditionalCategoryTabs();
             InitializeSearchUi();
             ConfigureCopyButtons();
             InitializeModernShell();
@@ -169,6 +189,47 @@ namespace CodeBank
             chkTemplateCodePublic.Enabled = false;
         }
 
+
+        private void InitializeAdditionalCategoryTabs()
+        {
+            AddAdditionalCategoryTab(PatternsCategory, "الگوها", "Patterns");
+            AddAdditionalCategoryTab(AlgorithmsCategory, "الگوریتم‌ها", "Algorithms");
+        }
+
+        private void AddAdditionalCategoryTab(string category, string tabTitle, string prefix)
+        {
+            var binding = new CategoryTabBinding
+            {
+                Category = category,
+                Tab = new TabPage { Name = "tab" + prefix, Text = tabTitle },
+                List = new ListBox { Name = "list" + prefix },
+                Title = new TextBox { Name = "txt" + prefix + "Title" },
+                Description = new TextBox { Name = "txt" + prefix + "Description" },
+                Code = new RichTextBox { Name = "txt" + prefix + "Code" },
+                Language = new TextBox { Name = "txt" + prefix + "Language" },
+                Tag = new TextBox { Name = "txt" + prefix + "Tag" },
+                IsPublic = new CheckBox { Name = "chk" + prefix + "Public" },
+                Edit = new Button { Name = "btnEdit" + prefix },
+                Delete = new Button { Name = "btnDelete" + prefix }
+            };
+
+            SetupCategoryTab(binding.Tab, binding.List, binding.Title,
+                binding.Description, binding.Code, binding.Language,
+                binding.Tag, binding.IsPublic, binding.Edit, binding.Delete);
+
+            binding.Title.ReadOnly = true;
+            binding.Description.ReadOnly = true;
+            binding.Code.ReadOnly = true;
+            binding.Language.ReadOnly = true;
+            binding.Tag.ReadOnly = true;
+            binding.IsPublic.Enabled = false;
+
+            binding.Edit.Click += delegate { EditCategoryItem(binding.List); };
+            binding.Delete.Click += delegate { DeleteCategoryItem(binding.List); };
+
+            tabControl1.TabPages.Add(binding.Tab);
+            _additionalCategoryTabs.Add(category, binding);
+        }
 
         private void InitializeSearchUi()
         {
@@ -316,6 +377,8 @@ namespace CodeBank
                     OpenSearchResultInCategory(item, tabpageTutorials, listTutorials);
                 else if (item.Category == TemplatesCategory)
                     OpenSearchResultInCategory(item, tabpageTemplateCode, listBoxTemplateCode);
+                else if (_additionalCategoryTabs.ContainsKey(item.Category))
+                    OpenSearchResultInAdditionalCategory(item, _additionalCategoryTabs[item.Category]);
                 else
                 {
                     LoadItemIntoEditor(item);
@@ -361,6 +424,33 @@ namespace CodeBank
                 tab == txttabpageErrors ? txtErrorLang : tab == tabpageTutorials ? txtTutorialLang : txtTemplateCodeLang,
                 tab == txttabpageErrors ? txtErrorTag : tab == tabpageTutorials ? txtTutorialTag : txtTemplateCodeTag,
                 tab == txttabpageErrors ? chkErrorPublic : tab == tabpageTutorials ? chkTutorialPublic : chkTemplateCodePublic);
+        }
+
+        private void OpenSearchResultInAdditionalCategory(CodeItem item, CategoryTabBinding binding)
+        {
+            tabControl1.SelectedTab = binding.Tab;
+            var wasLoading = _isLoading;
+            _isLoading = true;
+            try
+            {
+                binding.List.SelectedIndex = -1;
+                for (var i = 0; i < binding.List.Items.Count; i++)
+                {
+                    var listItem = binding.List.Items[i] as CodeItem;
+                    if (listItem != null && listItem.Id == item.Id)
+                    {
+                        binding.List.SelectedIndex = i;
+                        break;
+                    }
+                }
+
+                ShowCategoryItem(item, binding.Title, binding.Description, binding.Code,
+                    binding.Language, binding.Tag, binding.IsPublic);
+            }
+            finally
+            {
+                _isLoading = wasLoading;
+            }
         }
 
         private void RestoreSearchSelection(long? itemId)
@@ -415,6 +505,15 @@ namespace CodeBank
             AddCopyButton(txtTemplateCodeDesc);
             AddCopyButton(txtTemplateCodeCode);
             AddCopyButton(txtTemplateCodeTag);
+
+            foreach (var binding in _additionalCategoryTabs.Values)
+            {
+                AddCopyButton(binding.Title);
+                AddCopyButton(binding.Language);
+                AddCopyButton(binding.Description);
+                AddCopyButton(binding.Code);
+                AddCopyButton(binding.Tag);
+            }
         }
 
         private void AddCopyButton(Control target)
@@ -610,6 +709,8 @@ namespace CodeBank
                 LoadCategoryList(listErrors, ErrorsCategory);
                 LoadCategoryList(listTutorials, TutorialsCategory);
                 LoadCategoryList(listBoxTemplateCode, TemplatesCategory);
+                foreach (var binding in _additionalCategoryTabs.Values)
+                    LoadCategoryList(binding.List, binding.Category);
                 RefreshSearchResults();
             }
             finally
@@ -648,6 +749,19 @@ namespace CodeBank
                 ListTutorials_SelectedIndexChanged(sender, e);
             else if (list == listBoxTemplateCode)
                 ListBoxTemplateCode_SelectedIndexChanged(sender, e);
+            else
+            {
+                foreach (var binding in _additionalCategoryTabs.Values)
+                {
+                    if (list == binding.List)
+                    {
+                        ShowCategoryItem(GetSelectedCategoryItem(list), binding.Title,
+                            binding.Description, binding.Code, binding.Language,
+                            binding.Tag, binding.IsPublic);
+                        break;
+                    }
+                }
+            }
         }
 
         private void ListErrors_SelectedIndexChanged(object sender, EventArgs e)
