@@ -379,7 +379,7 @@ namespace CodeBank
             var button = new Button
             {
                 Text = "کپی",
-                Size = new System.Drawing.Size(36, Math.Max(22, target.Height)),
+                Size = new System.Drawing.Size(36, 24),
                 Location = new System.Drawing.Point(originalRight - 38, target.Top),
                 Anchor = (target.Anchor & AnchorStyles.Right) != 0
                     ? AnchorStyles.Top | AnchorStyles.Right
