@@ -460,7 +460,13 @@ namespace CodeBank
             if (!PrepareForNavigation())
                 return;
 
-            LoadItemIntoEditor(item);
+            var refreshedItem = _service.GetById(item.Id);
+            if (refreshedItem == null)
+                return;
+
+            _selectedGridItemId = refreshedItem.Id;
+            RestoreGridSelection(refreshedItem.Id);
+            LoadItemIntoEditor(refreshedItem);
             tabControl1.SelectedTab = tabpageInsert;
             txtname.Focus();
         }
