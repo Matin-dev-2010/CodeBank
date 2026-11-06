@@ -20,7 +20,9 @@ Before changing the schema:
 4. Verify that existing records survive the migration.
 5. Test both a fresh database and an upgrade from the previous schema.
 
-Do not change the database location without a migration strategy that preserves existing user data.
+The current location migration preserves the original file and copies SQLite WAL / rollback-journal sidecars when present. If both the old and new locations contain databases, no automatic merge is attempted. Back up both files and compare them manually.
+
+Do not change the database location again without a migration strategy that preserves existing user data.
 
 ## Verification checklist
 
@@ -37,7 +39,7 @@ For changes affecting the editor or persistence, manually verify:
 
 ## CI and artifacts
 
-The GitHub Actions workflow restores NuGet packages, builds the solution in Release mode on Windows, runs the NUnit unit tests, and uploads the application output and test results as short-lived artifacts.
+The GitHub Actions workflow restores NuGet packages, builds the solution in Release mode on Windows, runs the NUnit unit tests, and uploads the application output and test results as short-lived artifacts. The tag-triggered release workflow builds a per-user installer using Inno Setup.
 
 A successful build proves compilation only. It does not replace automated tests or manual UI/database verification.
 
