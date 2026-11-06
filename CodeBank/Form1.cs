@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using CodeBank.Data;
 using CodeBank.Models;
 using CodeBank.Services;
+using CodeBank.UI;
 
 namespace CodeBank
 {
@@ -17,6 +18,7 @@ namespace CodeBank
         private long? _selectedSearchItemId;
         private TextBox _searchTextBox;
         private ListBox _searchResultsList;
+        private System.Windows.Forms.Panel _searchPanel;
 
         private const string ErrorsCategory = "خطاها";
         private const string TutorialsCategory = "اموزشی";
@@ -31,6 +33,7 @@ namespace CodeBank
             ConfigureUi();
             InitializeSearchUi();
             ConfigureCopyButtons();
+            InitializeModernShell();
             WireEditorDirtyTracking();
         }
 
@@ -169,21 +172,35 @@ namespace CodeBank
 
         private void InitializeSearchUi()
         {
-            var searchLabel = CreateLabel("جستجوی کدها", 710, 13);
+            _searchPanel = new System.Windows.Forms.Panel
+            {
+                Name = "pnlSearch",
+                Location = new System.Drawing.Point(710, 12),
+                Size = new System.Drawing.Size(190, 420),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BackColor = System.Drawing.Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(10)
+            };
+
+            var searchLabel = CreateLabel("جستجوی کدها", 10, 12);
+            searchLabel.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
+            searchLabel.ForeColor = System.Drawing.Color.FromArgb(51, 65, 85);
+
             _searchTextBox = new TextBox
             {
                 Name = "txtSearchSnippets",
-                Location = new System.Drawing.Point(710, 32),
-                Size = new System.Drawing.Size(190, 25),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Location = new System.Drawing.Point(10, 38),
+                Size = new System.Drawing.Size(166, 28),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
 
             _searchResultsList = new ListBox
             {
                 Name = "lstSearchResults",
-                Location = new System.Drawing.Point(710, 66),
-                Size = new System.Drawing.Size(190, 333),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right,
+                Location = new System.Drawing.Point(10, 76),
+                Size = new System.Drawing.Size(166, 330),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 FormattingEnabled = true,
                 IntegralHeight = false
             };
@@ -191,13 +208,40 @@ namespace CodeBank
             _searchTextBox.TextChanged += SearchTextBox_TextChanged;
             _searchResultsList.SelectedIndexChanged += SearchResults_SelectedIndexChanged;
 
-            tabpageInsert.Controls.Add(searchLabel);
-            tabpageInsert.Controls.Add(_searchTextBox);
-            tabpageInsert.Controls.Add(_searchResultsList);
-            searchLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            searchLabel.BringToFront();
-            _searchTextBox.BringToFront();
-            _searchResultsList.BringToFront();
+            _searchPanel.Controls.Add(searchLabel);
+            _searchPanel.Controls.Add(_searchTextBox);
+            _searchPanel.Controls.Add(_searchResultsList);
+            tabpageInsert.Controls.Add(_searchPanel);
+
+            txtdesc.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            txtcode.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            tabpageInsert.Resize += MainTab_Resize;
+            UpdateMainEditorLayout();
+            _searchPanel.BringToFront();
+        }
+
+        private void MainTab_Resize(object sender, EventArgs e)
+        {
+            UpdateMainEditorLayout();
+        }
+
+        private void UpdateMainEditorLayout()
+        {
+            if (_searchPanel == null)
+                return;
+
+            _searchPanel.Left = tabpageInsert.ClientSize.Width - _searchPanel.Width - 12;
+            var editorWidth = Math.Max(300, _searchPanel.Left - txtdesc.Left - 24);
+            txtdesc.Width = editorWidth - 40;
+            txtcode.Width = editorWidth - 40;
+
+            foreach (Control control in tabpageInsert.Controls)
+            {
+                var copyButton = control as Button;
+                var target = copyButton == null ? null : copyButton.Tag as Control;
+                if (target == txtdesc || target == txtcode)
+                    copyButton.Left = target.Right + 2;
+            }
         }
 
         private void SearchResults_Format(object sender, ListControlConvertEventArgs e)
@@ -378,7 +422,9 @@ namespace CodeBank
             var originalRight = target.Right;
             var button = new Button
             {
+                Name = "btnCopy_" + target.Name,
                 Text = "کپی",
+                Tag = target,
                 Size = new System.Drawing.Size(36, 24),
                 Location = new System.Drawing.Point(originalRight - 38, target.Top),
                 Anchor = (target.Anchor & AnchorStyles.Right) != 0
@@ -409,6 +455,112 @@ namespace CodeBank
             {
                 ShowError("کپی کردن متن", ex);
             }
+        }
+
+
+        private void InitializeModernShell()
+        {
+            Text = "CodeBank | مدیریت هوشمند کدها";
+            StartPosition = FormStartPosition.CenterScreen;
+            Size = new System.Drawing.Size(1280, 860);
+            MinimumSize = new System.Drawing.Size(1100, 760);
+            BackColor = CodeBankTheme.Background;
+            ForeColor = CodeBankTheme.Ink;
+            Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+
+            tabControl1.Dock = DockStyle.Fill;
+
+            var header = new System.Windows.Forms.Panel
+            {
+                Name = "pnlAppHeader",
+                Dock = DockStyle.Top,
+                Height = 76,
+                BackColor = System.Drawing.Color.FromArgb(15, 23, 42),
+                Padding = new Padding(22, 8, 22, 8)
+            };
+
+            var brandPanel = new System.Windows.Forms.Panel
+            {
+                Dock = DockStyle.Right,
+                Width = 300,
+                BackColor = System.Drawing.Color.Transparent
+            };
+
+            var brandTitle = new Label
+            {
+                Text = "CodeBank",
+                Dock = DockStyle.Top,
+                Height = 36,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
+                ForeColor = System.Drawing.Color.White,
+                Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold)
+            };
+
+            var brandSubtitle = new Label
+            {
+                Text = "کتابخانه شخصی قطعه‌کدها",
+                Dock = DockStyle.Top,
+                Height = 23,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
+                ForeColor = System.Drawing.Color.FromArgb(148, 163, 184),
+                Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular)
+            };
+
+            brandPanel.Controls.Add(brandSubtitle);
+            brandPanel.Controls.Add(brandTitle);
+
+            var headerMeta = new Label
+            {
+                Text = "LOCAL LIBRARY   •   SQLITE",
+                Dock = DockStyle.Left,
+                Width = 240,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
+                ForeColor = System.Drawing.Color.FromArgb(147, 197, 253),
+                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
+            };
+
+            header.Controls.Add(brandPanel);
+            header.Controls.Add(headerMeta);
+
+            var status = new StatusStrip
+            {
+                Name = "statusStripMain",
+                Dock = DockStyle.Bottom,
+                SizingGrip = false,
+                BackColor = System.Drawing.Color.White,
+                ForeColor = CodeBankTheme.Muted,
+                Padding = new Padding(12, 3, 12, 3)
+            };
+            status.Items.Add(new ToolStripStatusLabel("آماده به کار")
+            {
+                ForeColor = System.Drawing.Color.FromArgb(15, 118, 110),
+                Font = new System.Drawing.Font("Tahoma", 8.5F, System.Drawing.FontStyle.Bold)
+            });
+            status.Items.Add(new ToolStripStatusLabel("  •  اطلاعات به‌صورت محلی ذخیره می‌شوند")
+            {
+                ForeColor = CodeBankTheme.Muted,
+                Spring = true,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
+            });
+            status.Items.Add(new ToolStripStatusLabel("CodeBank")
+            {
+                ForeColor = CodeBankTheme.Muted
+            });
+
+            Controls.Add(header);
+            Controls.Add(status);
+            Controls.SetChildIndex(header, 0);
+            Controls.SetChildIndex(status, 1);
+            Controls.SetChildIndex(tabControl1, 2);
+
+            CodeBankTheme.Apply(this, tabControl1);
+
+            brandTitle.ForeColor = System.Drawing.Color.White;
+            brandTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
+            brandSubtitle.ForeColor = System.Drawing.Color.FromArgb(148, 163, 184);
+            brandSubtitle.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+            headerMeta.ForeColor = System.Drawing.Color.FromArgb(147, 197, 253);
+            headerMeta.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
         }
 
         private void WireEditorDirtyTracking()

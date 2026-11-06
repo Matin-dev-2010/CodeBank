@@ -30,6 +30,7 @@
 - Search snippets by title, description, source code, language, category, or tag from the main tab.
 - Open a search result in its category tab or directly in the editor, while preserving unsaved-change prompts.
 - Copy titles, descriptions, code, language, category, and tags with one-click copy buttons.
+- Use a modern desktop interface with a navy brand header, a consistent blue/slate color system, rounded semantic action buttons, custom tab styling, readable data grids, and dedicated code-editor surfaces.
 - Use parameterized SQLite commands for data operations.
 - Validate required fields in the service layer.
 - Warn before clearing, navigating away from, or closing the editor when unsaved changes exist.
