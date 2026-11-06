@@ -38,6 +38,21 @@ jobs:
           }
           "FRAMEWORK_REFERENCE_PATH=$frameworkPath" | Out-File -FilePath $env:GITHUB_ENV -Append
 
+      - name: Prepare assembly version
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.Substring(1)
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            Write-Error "Release tags must use semantic version format vMAJOR.MINOR.PATCH."
+            exit 1
+          }
+          $assemblyVersion = "$version.0"
+          $assemblyInfo = "CodeBank/Properties/AssemblyInfo.cs"
+          $assemblyContent = Get-Content $assemblyInfo -Raw
+          $assemblyContent = [regex]::Replace($assemblyContent, 'AssemblyVersion\("[^"]+"\)', ('AssemblyVersion("{0}")' -f $assemblyVersion))
+          $assemblyContent = [regex]::Replace($assemblyContent, 'AssemblyFileVersion\("[^"]+"\)', ('AssemblyFileVersion("{0}")' -f $assemblyVersion))
+          Set-Content -Path $assemblyInfo -Value $assemblyContent -Encoding UTF8
+
       - name: Build solution
         run: msbuild CodeBank.sln /p:Configuration=Release /p:FrameworkPathOverride="${{ env.FRAMEWORK_REFERENCE_PATH }}" /m /v:minimal
 
@@ -50,37 +65,13 @@ jobs:
       - name: Build Windows installer
         shell: pwsh
         run: |
-          $version = $env:GITHUB_REF_NAME.Substring(1)
-          if ($version -notmatch '^\d+\.\d+\.\d+ ${env:ProgramFiles(x86)} "Inno Setup 6/ISCC.exe"
-          if (-not (Test-Path $compiler)) {
-            Write-Error "Inno Setup compiler was not found."
-            exit 1
-          }
-          & $compiler "/DAppVersion=$version" "installer/CodeBank.iss"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          files: artifacts/installer/CodeBank-Setup-*.exe
-) {
-            Write-Error "Release tags must use semantic version format vMAJOR.MINOR.PATCH."
-            exit 1
-          }
-          $assemblyVersion = "$version.0"
-          $assemblyInfo = "CodeBank/Properties/AssemblyInfo.cs"
-          $assemblyContent = Get-Content $assemblyInfo -Raw
-          $assemblyContent = $assemblyContent -replace 'AssemblyVersion\("[^"]+"\)', "AssemblyVersion(`"$assemblyVersion`")"
-          $assemblyContent = $assemblyContent -replace 'AssemblyFileVersion\("[^"]+"\)', "AssemblyFileVersion(`"$assemblyVersion`")"
-          Set-Content -Path $assemblyInfo -Value $assemblyContent -Encoding UTF8
           New-Item -ItemType Directory -Force -Path "artifacts/installer" | Out-Null
           $compiler = Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6/ISCC.exe"
           if (-not (Test-Path $compiler)) {
             Write-Error "Inno Setup compiler was not found."
             exit 1
           }
-          & $compiler "/DAppVersion=$version" "installer/CodeBank.iss"
+          & $compiler "installer/CodeBank.iss"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Create GitHub Release
