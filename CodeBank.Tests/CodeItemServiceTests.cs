@@ -50,6 +50,28 @@ namespace CodeBank.Tests
         }
 
         [Test]
+        public void Constructor_NullRepository_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => new CodeItemService(null));
+        }
+
+        [TestCase("code")]
+        [TestCase("language")]
+        [TestCase("category")]
+        public void Create_WithoutOtherRequiredField_Throws(string field)
+        {
+            var item = ValidItem();
+
+            if (field == "code") item.Code = " ";
+            if (field == "language") item.Language = "";
+            if (field == "category") item.Category = null;
+
+            Assert.Throws<ArgumentException>(() => _service.Create(item));
+            Assert.That(_repository.Items, Is.Empty);
+        }
+
+
+        [Test]
         public void Update_ValidItem_ChangesStoredItem()
         {
             var item = ValidItem();
