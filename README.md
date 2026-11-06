@@ -145,7 +145,7 @@ GitHub Actions restores NuGet dependencies, builds the solution in Release mode 
 ## Known limitations
 
 - The application currently uses a local SQLite database and has no synchronization or multi-user server.
-- Schema initialization is not a versioned migration system.
+- SQLite schema version tracking starts at version 1. A dedicated upgrade migration from version 1 to a future schema has not yet been implemented.
 - Unit tests cover service validation and legacy database-file migration. Full UI automation and end-to-end database tests are still future work.
 - The application targets .NET Framework 4.6.1; this is a legacy framework target and should be upgraded only with a deliberate compatibility plan.
 - A Windows installer can be generated from a version tag. It is not code-signed; Windows SmartScreen may display an unknown-publisher warning.
