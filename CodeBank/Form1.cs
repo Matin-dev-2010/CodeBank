@@ -4,7 +4,6 @@ using System.Windows.Forms;
 using CodeBank.Data;
 using CodeBank.Models;
 using CodeBank.Services;
-using CodeBank.UI;
 
 namespace CodeBank
 {
@@ -18,30 +17,10 @@ namespace CodeBank
         private long? _selectedSearchItemId;
         private TextBox _searchTextBox;
         private ListBox _searchResultsList;
-        private System.Windows.Forms.Panel _searchPanel;
-        private readonly Dictionary<string, CategoryTabBinding> _additionalCategoryTabs =
-            new Dictionary<string, CategoryTabBinding>();
-
-        private sealed class CategoryTabBinding
-        {
-            public string Category;
-            public TabPage Tab;
-            public ListBox List;
-            public TextBox Title;
-            public TextBox Description;
-            public RichTextBox Code;
-            public TextBox Language;
-            public TextBox Tag;
-            public CheckBox IsPublic;
-            public Button Edit;
-            public Button Delete;
-        }
 
         private const string ErrorsCategory = "خطاها";
         private const string TutorialsCategory = "اموزشی";
         private const string TemplatesCategory = "کد اماده";
-        private const string PatternsCategory = "الگوها";
-        private const string AlgorithmsCategory = "الگوریتم";
 
         public frmCodeBank()
         {
@@ -50,10 +29,8 @@ namespace CodeBank
             _service = new CodeItemService(new CodeRepository());
 
             ConfigureUi();
-            InitializeAdditionalCategoryTabs();
             InitializeSearchUi();
             ConfigureCopyButtons();
-            InitializeModernShell();
             WireEditorDirtyTracking();
         }
 
@@ -190,78 +167,23 @@ namespace CodeBank
         }
 
 
-        private void InitializeAdditionalCategoryTabs()
-        {
-            AddAdditionalCategoryTab(PatternsCategory, "الگوها", "Patterns");
-            AddAdditionalCategoryTab(AlgorithmsCategory, "الگوریتم‌ها", "Algorithms");
-        }
-
-        private void AddAdditionalCategoryTab(string category, string tabTitle, string prefix)
-        {
-            var binding = new CategoryTabBinding
-            {
-                Category = category,
-                Tab = new TabPage { Name = "tab" + prefix, Text = tabTitle },
-                List = new ListBox { Name = "list" + prefix },
-                Title = new TextBox { Name = "txt" + prefix + "Title" },
-                Description = new TextBox { Name = "txt" + prefix + "Description" },
-                Code = new RichTextBox { Name = "txt" + prefix + "Code" },
-                Language = new TextBox { Name = "txt" + prefix + "Language" },
-                Tag = new TextBox { Name = "txt" + prefix + "Tag" },
-                IsPublic = new CheckBox { Name = "chk" + prefix + "Public" },
-                Edit = new Button { Name = "btnEdit" + prefix },
-                Delete = new Button { Name = "btnDelete" + prefix }
-            };
-
-            SetupCategoryTab(binding.Tab, binding.List, binding.Title,
-                binding.Description, binding.Code, binding.Language,
-                binding.Tag, binding.IsPublic, binding.Edit, binding.Delete);
-
-            binding.Title.ReadOnly = true;
-            binding.Description.ReadOnly = true;
-            binding.Code.ReadOnly = true;
-            binding.Language.ReadOnly = true;
-            binding.Tag.ReadOnly = true;
-            binding.IsPublic.Enabled = false;
-
-            binding.Edit.Click += delegate { EditCategoryItem(binding.List); };
-            binding.Delete.Click += delegate { DeleteCategoryItem(binding.List); };
-
-            tabControl1.TabPages.Add(binding.Tab);
-            _additionalCategoryTabs.Add(category, binding);
-        }
-
         private void InitializeSearchUi()
         {
-            _searchPanel = new System.Windows.Forms.Panel
-            {
-                Name = "pnlSearch",
-                Location = new System.Drawing.Point(710, 12),
-                Size = new System.Drawing.Size(190, 420),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                BackColor = System.Drawing.Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
-                Padding = new Padding(10)
-            };
-
-            var searchLabel = CreateLabel("جستجوی کدها", 10, 12);
-            searchLabel.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
-            searchLabel.ForeColor = System.Drawing.Color.FromArgb(51, 65, 85);
-
+            var searchLabel = CreateLabel("جستجوی کدها", 710, 13);
             _searchTextBox = new TextBox
             {
                 Name = "txtSearchSnippets",
-                Location = new System.Drawing.Point(10, 38),
-                Size = new System.Drawing.Size(166, 28),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                Location = new System.Drawing.Point(710, 32),
+                Size = new System.Drawing.Size(190, 25),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
 
             _searchResultsList = new ListBox
             {
                 Name = "lstSearchResults",
-                Location = new System.Drawing.Point(10, 76),
-                Size = new System.Drawing.Size(166, 330),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                Location = new System.Drawing.Point(710, 66),
+                Size = new System.Drawing.Size(190, 333),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right,
                 FormattingEnabled = true,
                 IntegralHeight = false
             };
@@ -269,40 +191,13 @@ namespace CodeBank
             _searchTextBox.TextChanged += SearchTextBox_TextChanged;
             _searchResultsList.SelectedIndexChanged += SearchResults_SelectedIndexChanged;
 
-            _searchPanel.Controls.Add(searchLabel);
-            _searchPanel.Controls.Add(_searchTextBox);
-            _searchPanel.Controls.Add(_searchResultsList);
-            tabpageInsert.Controls.Add(_searchPanel);
-
-            txtdesc.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            txtcode.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            tabpageInsert.Resize += MainTab_Resize;
-            UpdateMainEditorLayout();
-            _searchPanel.BringToFront();
-        }
-
-        private void MainTab_Resize(object sender, EventArgs e)
-        {
-            UpdateMainEditorLayout();
-        }
-
-        private void UpdateMainEditorLayout()
-        {
-            if (_searchPanel == null)
-                return;
-
-            _searchPanel.Left = tabpageInsert.ClientSize.Width - _searchPanel.Width - 12;
-            var editorWidth = Math.Max(300, _searchPanel.Left - txtdesc.Left - 24);
-            txtdesc.Width = editorWidth - 40;
-            txtcode.Width = editorWidth - 40;
-
-            foreach (Control control in tabpageInsert.Controls)
-            {
-                var copyButton = control as Button;
-                var target = copyButton == null ? null : copyButton.Tag as Control;
-                if (target == txtdesc || target == txtcode)
-                    copyButton.Left = target.Right + 2;
-            }
+            tabpageInsert.Controls.Add(searchLabel);
+            tabpageInsert.Controls.Add(_searchTextBox);
+            tabpageInsert.Controls.Add(_searchResultsList);
+            searchLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            searchLabel.BringToFront();
+            _searchTextBox.BringToFront();
+            _searchResultsList.BringToFront();
         }
 
         private void SearchResults_Format(object sender, ListControlConvertEventArgs e)
@@ -377,8 +272,6 @@ namespace CodeBank
                     OpenSearchResultInCategory(item, tabpageTutorials, listTutorials);
                 else if (item.Category == TemplatesCategory)
                     OpenSearchResultInCategory(item, tabpageTemplateCode, listBoxTemplateCode);
-                else if (_additionalCategoryTabs.ContainsKey(item.Category))
-                    OpenSearchResultInAdditionalCategory(item, _additionalCategoryTabs[item.Category]);
                 else
                 {
                     LoadItemIntoEditor(item);
@@ -424,33 +317,6 @@ namespace CodeBank
                 tab == txttabpageErrors ? txtErrorLang : tab == tabpageTutorials ? txtTutorialLang : txtTemplateCodeLang,
                 tab == txttabpageErrors ? txtErrorTag : tab == tabpageTutorials ? txtTutorialTag : txtTemplateCodeTag,
                 tab == txttabpageErrors ? chkErrorPublic : tab == tabpageTutorials ? chkTutorialPublic : chkTemplateCodePublic);
-        }
-
-        private void OpenSearchResultInAdditionalCategory(CodeItem item, CategoryTabBinding binding)
-        {
-            tabControl1.SelectedTab = binding.Tab;
-            var wasLoading = _isLoading;
-            _isLoading = true;
-            try
-            {
-                binding.List.SelectedIndex = -1;
-                for (var i = 0; i < binding.List.Items.Count; i++)
-                {
-                    var listItem = binding.List.Items[i] as CodeItem;
-                    if (listItem != null && listItem.Id == item.Id)
-                    {
-                        binding.List.SelectedIndex = i;
-                        break;
-                    }
-                }
-
-                ShowCategoryItem(item, binding.Title, binding.Description, binding.Code,
-                    binding.Language, binding.Tag, binding.IsPublic);
-            }
-            finally
-            {
-                _isLoading = wasLoading;
-            }
         }
 
         private void RestoreSearchSelection(long? itemId)
@@ -505,15 +371,6 @@ namespace CodeBank
             AddCopyButton(txtTemplateCodeDesc);
             AddCopyButton(txtTemplateCodeCode);
             AddCopyButton(txtTemplateCodeTag);
-
-            foreach (var binding in _additionalCategoryTabs.Values)
-            {
-                AddCopyButton(binding.Title);
-                AddCopyButton(binding.Language);
-                AddCopyButton(binding.Description);
-                AddCopyButton(binding.Code);
-                AddCopyButton(binding.Tag);
-            }
         }
 
         private void AddCopyButton(Control target)
@@ -521,9 +378,7 @@ namespace CodeBank
             var originalRight = target.Right;
             var button = new Button
             {
-                Name = "btnCopy_" + target.Name,
                 Text = "کپی",
-                Tag = target,
                 Size = new System.Drawing.Size(36, 24),
                 Location = new System.Drawing.Point(originalRight - 38, target.Top),
                 Anchor = (target.Anchor & AnchorStyles.Right) != 0
@@ -554,112 +409,6 @@ namespace CodeBank
             {
                 ShowError("کپی کردن متن", ex);
             }
-        }
-
-
-        private void InitializeModernShell()
-        {
-            Text = "CodeBank | مدیریت هوشمند کدها";
-            StartPosition = FormStartPosition.CenterScreen;
-            Size = new System.Drawing.Size(1280, 860);
-            MinimumSize = new System.Drawing.Size(1100, 760);
-            BackColor = CodeBankTheme.Background;
-            ForeColor = CodeBankTheme.Ink;
-            Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
-
-            tabControl1.Dock = DockStyle.Fill;
-
-            var header = new System.Windows.Forms.Panel
-            {
-                Name = "pnlAppHeader",
-                Dock = DockStyle.Top,
-                Height = 76,
-                BackColor = System.Drawing.Color.FromArgb(15, 23, 42),
-                Padding = new Padding(22, 8, 22, 8)
-            };
-
-            var brandPanel = new System.Windows.Forms.Panel
-            {
-                Dock = DockStyle.Right,
-                Width = 300,
-                BackColor = System.Drawing.Color.Transparent
-            };
-
-            var brandTitle = new Label
-            {
-                Text = "CodeBank",
-                Dock = DockStyle.Top,
-                Height = 36,
-                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
-                ForeColor = System.Drawing.Color.White,
-                Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold)
-            };
-
-            var brandSubtitle = new Label
-            {
-                Text = "کتابخانه شخصی قطعه‌کدها",
-                Dock = DockStyle.Top,
-                Height = 23,
-                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
-                ForeColor = System.Drawing.Color.FromArgb(148, 163, 184),
-                Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular)
-            };
-
-            brandPanel.Controls.Add(brandSubtitle);
-            brandPanel.Controls.Add(brandTitle);
-
-            var headerMeta = new Label
-            {
-                Text = "LOCAL LIBRARY   •   SQLITE",
-                Dock = DockStyle.Left,
-                Width = 240,
-                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
-                ForeColor = System.Drawing.Color.FromArgb(147, 197, 253),
-                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
-            };
-
-            header.Controls.Add(brandPanel);
-            header.Controls.Add(headerMeta);
-
-            var status = new StatusStrip
-            {
-                Name = "statusStripMain",
-                Dock = DockStyle.Bottom,
-                SizingGrip = false,
-                BackColor = System.Drawing.Color.White,
-                ForeColor = CodeBankTheme.Muted,
-                Padding = new Padding(12, 3, 12, 3)
-            };
-            status.Items.Add(new ToolStripStatusLabel("آماده به کار")
-            {
-                ForeColor = System.Drawing.Color.FromArgb(15, 118, 110),
-                Font = new System.Drawing.Font("Tahoma", 8.5F, System.Drawing.FontStyle.Bold)
-            });
-            status.Items.Add(new ToolStripStatusLabel("  •  اطلاعات به‌صورت محلی ذخیره می‌شوند")
-            {
-                ForeColor = CodeBankTheme.Muted,
-                Spring = true,
-                TextAlign = System.Drawing.ContentAlignment.MiddleRight
-            });
-            status.Items.Add(new ToolStripStatusLabel("CodeBank")
-            {
-                ForeColor = CodeBankTheme.Muted
-            });
-
-            Controls.Add(header);
-            Controls.Add(status);
-            Controls.SetChildIndex(header, 0);
-            Controls.SetChildIndex(status, 1);
-            Controls.SetChildIndex(tabControl1, 2);
-
-            CodeBankTheme.Apply(this, tabControl1);
-
-            brandTitle.ForeColor = System.Drawing.Color.White;
-            brandTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
-            brandSubtitle.ForeColor = System.Drawing.Color.FromArgb(148, 163, 184);
-            brandSubtitle.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
-            headerMeta.ForeColor = System.Drawing.Color.FromArgb(147, 197, 253);
-            headerMeta.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
         }
 
         private void WireEditorDirtyTracking()
@@ -709,8 +458,6 @@ namespace CodeBank
                 LoadCategoryList(listErrors, ErrorsCategory);
                 LoadCategoryList(listTutorials, TutorialsCategory);
                 LoadCategoryList(listBoxTemplateCode, TemplatesCategory);
-                foreach (var binding in _additionalCategoryTabs.Values)
-                    LoadCategoryList(binding.List, binding.Category);
                 RefreshSearchResults();
             }
             finally
@@ -749,19 +496,6 @@ namespace CodeBank
                 ListTutorials_SelectedIndexChanged(sender, e);
             else if (list == listBoxTemplateCode)
                 ListBoxTemplateCode_SelectedIndexChanged(sender, e);
-            else
-            {
-                foreach (var binding in _additionalCategoryTabs.Values)
-                {
-                    if (list == binding.List)
-                    {
-                        ShowCategoryItem(GetSelectedCategoryItem(list), binding.Title,
-                            binding.Description, binding.Code, binding.Language,
-                            binding.Tag, binding.IsPublic);
-                        break;
-                    }
-                }
-            }
         }
 
         private void ListErrors_SelectedIndexChanged(object sender, EventArgs e)
